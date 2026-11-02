@@ -1153,3 +1153,493 @@ Possible keys:
 
 **Next Problem:** Top K Frequent Elements.
 
+# NeetCode 150 – 05. Top K Frequent Elements
+
+**Category:** Arrays & Hashing  
+**Pattern:** Frequency Counting + Sorting / Heap / Bucket Sort  
+**Language:** C++
+
+## Problem
+
+Given an integer array `nums` and an integer `k`, return the `k` most frequent elements.
+
+The answer can be returned in any order.
+
+### Example
+
+```cpp
+Input: nums = {1,1,1,2,2,3}
+k = 2
+
+Output: {1,2}
+```
+
+Explanation:
+
+- 1 appears 3 times.
+- 2 appears 2 times.
+- 3 appears 1 time.
+
+The two most frequent elements are 1 and 2.
+
+---
+
+# Approach 1: HashMap + Sorting
+
+### Logic
+
+1. Create an unordered_map to count the frequency of every number.
+2. Store each number and its frequency in a pair.
+3. Sort the pairs based on frequency.
+4. Take the last k elements because default pair sorting is ascending.
+5. Return the numbers.
+
+### Code
+
+```cpp
+class Solution {
+public:
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+
+        vector<int> ans;
+        vector<pair<int,int>> pair_ele;
+
+        unordered_map<int,int> mp;
+
+        // Step 1: Calculate frequency
+        for(auto &x : nums) {
+            mp[x]++;
+        }
+
+        // Step 2: Store frequency and number
+        for(auto &t : mp) {
+            pair_ele.push_back({t.second, t.first});
+        }
+
+        // Step 3: Sort pairs
+        sort(pair_ele.begin(), pair_ele.end());
+
+        // Step 4: Extract top k elements
+        for(int i = pair_ele.size()-1;
+            i >= 0 && ans.size() < k; i--) {
+
+            ans.push_back(pair_ele[i].second);
+        }
+
+        return ans;
+    }
+};
+```
+
+### Understanding Pair Storage
+
+```cpp
+pair_ele.push_back({t.second, t.first});
+```
+
+We store:
+
+- `first` = Frequency
+- `second` = Number
+
+Example:
+
+```text
+1 → 3
+2 → 2
+3 → 1
+```
+
+Stored pairs:
+
+```text
+{3,1}
+{2,2}
+{1,3}
+```
+
+After sorting:
+
+```text
+{1,3}
+{2,2}
+{3,1}
+```
+
+Taking the last two elements gives `{1,2}`.
+
+### Complexity
+
+Let:
+- n = Total number of elements.
+- m = Number of distinct elements.
+
+- Time: O(n + m log m)
+- Space: O(m)
+
+### Advantages
+
+- Easy to understand.
+- Uses basic sorting and HashMap concepts.
+- Good starting approach.
+
+### Limitation
+
+Sorting all distinct elements is unnecessary when we only need the top k elements.
+
+---
+
+# Approach 2: HashMap + Min Heap
+
+### Logic
+
+A Min Heap helps us maintain only the k most frequent elements.
+
+1. Count frequencies using HashMap.
+2. Create a Min Heap storing `{frequency, number}`.
+3. Insert every pair into the heap.
+4. If heap size exceeds k, remove the smallest frequency.
+5. Finally, the heap contains the k most frequent elements.
+
+### Code
+
+```cpp
+class Solution {
+public:
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+
+        unordered_map<int,int> mp;
+
+        // Step 1: Frequency counting
+        for(int x : nums) {
+            mp[x]++;
+        }
+
+        // Step 2: Min Heap
+        priority_queue<
+            pair<int,int>,
+            vector<pair<int,int>>,
+            greater<pair<int,int>>
+        > pq;
+
+        // Step 3: Maintain only k elements
+        for(auto &it : mp) {
+
+            pq.push({it.second, it.first});
+
+            if(pq.size() > k) {
+                pq.pop();
+            }
+        }
+
+        // Step 4: Extract answer
+        vector<int> ans;
+
+        while(!pq.empty()) {
+            ans.push_back(pq.top().second);
+            pq.pop();
+        }
+
+        return ans;
+    }
+};
+```
+
+### Understanding Min Heap
+
+A Min Heap keeps the smallest frequency at the top.
+
+Example:
+
+```text
+Frequency pairs:
+
+{3,1}
+{2,2}
+{1,3}
+```
+
+If k = 2:
+
+- Insert `{3,1}`.
+- Insert `{2,2}`.
+- Insert `{1,3}`.
+- Heap size becomes 3.
+- Remove `{1,3}` because it has the smallest frequency.
+
+Remaining elements:
+
+```text
+{2,2}
+{3,1}
+```
+
+Answer: `{2,1}`
+
+The output order does not matter.
+
+### Important C++ STL Concept
+
+```cpp
+priority_queue<int> pq;
+```
+
+Creates a Max Heap by default.
+
+```cpp
+priority_queue<int, vector<int>, greater<int>> pq;
+```
+
+Creates a Min Heap.
+
+For this problem:
+
+```cpp
+priority_queue<
+    pair<int,int>,
+    vector<pair<int,int>>,
+    greater<pair<int,int>>
+> pq;
+```
+
+Stores pairs ordered by their first value (frequency), then their second value.
+
+### Complexity
+
+- Time: O(n + m log k)
+- Space: O(m + k), including the HashMap and heap.
+
+### Advantages
+
+- Does not sort every distinct element.
+- Efficient when k is much smaller than the number of distinct elements.
+- Useful for many Top K interview problems.
+
+---
+
+# Approach 3: HashMap + Bucket Sort
+
+### Logic
+
+This is the linear-time approach.
+
+The important observation:
+
+**An element cannot appear more than n times.**
+
+Therefore, we can create buckets indexed by frequency.
+
+1. Count frequencies using HashMap.
+2. Create a vector of buckets of size n + 1.
+3. Place each number inside the bucket corresponding to its frequency.
+4. Traverse buckets from highest frequency to lowest.
+5. Collect elements until we have k elements.
+
+### Code
+
+```cpp
+class Solution {
+public:
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+
+        unordered_map<int,int> mp;
+
+        // Step 1: Frequency counting
+        for(int x : nums) {
+            mp[x]++;
+        }
+
+        // Step 2: Create frequency buckets
+        vector<vector<int>> bucket(nums.size() + 1);
+
+        // Step 3: Place numbers into buckets
+        for(auto &it : mp) {
+
+            int frequency = it.second;
+            int number = it.first;
+
+            bucket[frequency].push_back(number);
+        }
+
+        // Step 4: Extract top k frequent elements
+        vector<int> ans;
+
+        for(int i = bucket.size() - 1; i >= 1; i--) {
+
+            for(int x : bucket[i]) {
+
+                ans.push_back(x);
+
+                if(ans.size() == k) {
+                    return ans;
+                }
+            }
+        }
+
+        return ans;
+    }
+};
+```
+
+### Dry Run
+
+Input:
+
+```cpp
+nums = {1,1,1,2,2,3}
+k = 2
+```
+
+Frequency map:
+
+```text
+1 → 3
+2 → 2
+3 → 1
+```
+
+Bucket representation:
+
+```text
+Frequency 1 → [3]
+Frequency 2 → [2]
+Frequency 3 → [1]
+Frequency 4 → []
+Frequency 5 → []
+Frequency 6 → []
+```
+
+Traverse from highest frequency to lowest:
+
+```text
+Bucket 3 → [1] → Add 1
+Bucket 2 → [2] → Add 2
+```
+
+We have collected k = 2 elements.
+
+Output:
+
+```cpp
+{1,2}
+```
+
+### Complexity
+
+- Time: O(n) average.
+- Space: O(n).
+
+### Advantages
+
+- Avoids sorting.
+- Avoids heap operations.
+- Efficient linear-time solution.
+- Excellent interview approach for this problem.
+
+---
+
+# Final Approach Comparison
+
+Let m be the number of distinct elements.
+
+| Approach | Time Complexity | Space Complexity |
+|---|---|---|
+| HashMap + Sorting | O(n + m log m) | O(m) |
+| HashMap + Min Heap | O(n + m log k) | O(m + k) |
+| HashMap + Bucket Sort | O(n) average | O(n) |
+
+---
+
+# Important C++ STL Concepts
+
+## 1. unordered_map
+
+```cpp
+unordered_map<int,int> mp;
+mp[x]++;
+```
+
+Used for frequency counting.
+
+## 2. pair<int,int>
+
+```cpp
+pair<int,int> p = {3,1};
+```
+
+- first = 3
+- second = 1
+
+## 3. priority_queue
+
+```cpp
+priority_queue<int> pq;
+```
+
+Default Max Heap.
+
+Min Heap:
+
+```cpp
+priority_queue<int, vector<int>, greater<int>> pq;
+```
+
+## 4. sort()
+
+```cpp
+sort(arr.begin(), arr.end());
+```
+
+Sorts elements in ascending order by default.
+
+For pairs, it first compares `first`, then `second`.
+
+## 5. vector<vector<int>>
+
+```cpp
+vector<vector<int>> bucket(n + 1);
+```
+
+Useful for bucket-based grouping.
+
+---
+
+# Interview Pattern Recognition
+
+When a problem asks:
+
+- Find the top K frequent elements.
+- Find the K largest or smallest elements.
+- Find the most common elements.
+- Maintain the top K elements efficiently.
+
+Think about:
+
+**HashMap + Heap / Bucket Sort**
+
+Choose the approach based on requirements:
+
+- Sorting: When simplicity is preferred.
+- Min Heap: When k is small compared with the number of distinct elements.
+- Bucket Sort: When frequencies are bounded and linear time is desirable.
+
+---
+
+# 30-Second Revision
+
+**Top K Frequent Elements**
+
+1. HashMap: Count occurrences.
+2. Sorting: Sort frequency-number pairs and take the largest k.
+3. Min Heap: Maintain only k elements by removing the smallest frequency.
+4. Bucket Sort: Store numbers according to their frequency.
+5. Best linear-time approach: Bucket Sort.
+6. Important STL: `unordered_map`, `pair`, `priority_queue`, `greater<>`.
+
+**Recommended interview preparation:** Understand all three approaches. Practise Min Heap and Bucket Sort independently.
+
+**Pattern:** Arrays & Hashing → Frequency Counting + Top K.
+
+**Status:** Completed.
+
+**Next Problem:** Product of Array Except Self.
