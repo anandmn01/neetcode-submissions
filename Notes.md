@@ -884,3 +884,272 @@ Instead of checking all possible pairs, calculate what value you need and search
 
 **Next Problem:** Group Anagrams.
 
+# NeetCode 150 – 04. Group Anagrams
+
+**Category:** Arrays & Hashing  
+**Pattern:** HashMap + Grouping  
+**Language:** C++
+
+## Problem
+
+Given an array of strings, group the anagrams together.
+
+Anagrams are words containing the same characters with the same frequencies.
+
+### Example
+
+```cpp
+Input: {"eat", "tea", "tan", "ate", "nat", "bat"}
+
+Output:
+{
+    {"eat", "tea", "ate"},
+    {"tan", "nat"},
+    {"bat"}
+}
+```
+
+The order of groups does not matter.
+
+---
+
+## Approach 1: Sorting + HashMap
+
+### Logic
+
+1. Create an unordered_map where the key is a sorted string and the value is a vector of original strings.
+2. Traverse every word.
+3. Make a copy of the word.
+4. Sort the copy.
+5. Use the sorted word as the key.
+6. Push the original word into the corresponding group.
+7. Return all groups.
+
+### Code
+
+```cpp
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+
+        unordered_map<string, vector<string>> mp;
+
+        for(string &word : strs) {
+
+            string key = word;
+
+            sort(key.begin(), key.end());
+
+            mp[key].push_back(word);
+        }
+
+        vector<vector<string>> ans;
+
+        for(auto &it : mp) {
+            ans.push_back(it.second);
+        }
+
+        return ans;
+    }
+};
+```
+
+### Example
+
+| Word | Sorted key |
+|---|---|
+| eat | aet |
+| tea | aet |
+| ate | aet |
+| tan | ant |
+| nat | ant |
+| bat | abt |
+
+HashMap:
+
+```text
+aet → [eat, tea, ate]
+ant → [tan, nat]
+abt → [bat]
+```
+
+### Complexity
+
+Let:
+- n = Number of strings.
+- k = Maximum length of a string.
+
+- Time: O(n × k log k)
+- Space: O(n × k) for the stored groups and keys.
+
+### Advantages
+
+- Easy to understand.
+- Simple implementation.
+- Uses sorting as a common signature.
+
+---
+
+## Approach 2: Character Frequency + HashMap
+
+### Logic
+
+Instead of sorting each word, calculate the frequency of every character.
+
+For lowercase English letters, create an array of size 26.
+
+Words with identical character frequencies belong to the same group.
+
+Example:
+
+```text
+eat → a:1, e:1, t:1
+tea → a:1, e:1, t:1
+ate → a:1, e:1, t:1
+```
+
+All three words have the same frequency signature.
+
+Use this signature as the HashMap key.
+
+### Code
+
+```cpp
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+
+        unordered_map<string, vector<string>> mp;
+
+        for(string &word : strs) {
+
+            vector<int> freq(26, 0);
+
+            for(char c : word) {
+                freq[c - 'a']++;
+            }
+
+            string key = "";
+
+            for(int count : freq) {
+                key += to_string(count) + "#";
+            }
+
+            mp[key].push_back(word);
+        }
+
+        vector<vector<string>> ans;
+
+        for(auto &it : mp) {
+            ans.push_back(it.second);
+        }
+
+        return ans;
+    }
+};
+```
+
+### Why use `#`?
+
+It separates frequency values and prevents ambiguous key representations.
+
+For example, frequencies `[1, 11]` and `[11, 1]` must produce different keys.
+
+### Complexity
+
+- Time: O(n × k), with a fixed 26-character alphabet.
+- Space: O(n × k) for storing groups and keys.
+
+### Advantages
+
+- Avoids sorting every word.
+- Uses character frequency as a unique signature.
+- Efficient for longer strings.
+
+---
+
+## Approach Comparison
+
+| Approach | Time Complexity | Space Complexity |
+|---|---|---|
+| Sorting + HashMap | O(n × k log k) | O(n × k) |
+| Frequency + HashMap | O(n × k) | O(n × k) |
+
+---
+
+## Important C++ Concepts
+
+### 1. unordered_map<string, vector<string>>
+
+Stores:
+- Key: Common signature.
+- Value: Group of anagram strings.
+
+### 2. sort()
+
+```cpp
+sort(key.begin(), key.end());
+```
+
+Sorts characters to generate a common key.
+
+### 3. push_back()
+
+```cpp
+mp[key].push_back(word);
+```
+
+Adds a word to its corresponding group.
+
+### 4. Automatic insertion
+
+```cpp
+mp[key].push_back(word);
+```
+
+If the key does not exist, unordered_map creates an empty vector automatically.
+
+### 5. Character indexing
+
+```cpp
+freq[c - 'a']++;
+```
+
+Maps lowercase characters to indices 0–25.
+
+---
+
+## Interview Pattern Recognition
+
+When a problem asks you to:
+- Group anagrams.
+- Group items with identical properties.
+- Find a common signature.
+- Group strings based on character frequency.
+
+Think about:
+
+**HashMap + Common Key / Signature**
+
+Possible keys:
+- Sorted string.
+- Character frequency representation.
+
+---
+
+## 30-Second Revision
+
+- Sorting approach: Sort every word and use the sorted string as the key.
+- Frequency approach: Calculate character frequencies and use them as the key.
+- HashMap value: Store a vector of original words.
+- Simplification: `mp[key].push_back(word)` handles insertion automatically.
+- Best asymptotic approach for lowercase letters: Frequency signature.
+
+**Recommended interview solution:** Both approaches are valid. Explain sorting first because it is intuitive, then frequency counting as the linear-time alternative.
+
+**Pattern:** Arrays & Hashing → HashMap Grouping.
+
+**Status:** Completed.
+
+**Next Problem:** Top K Frequent Elements.
+
