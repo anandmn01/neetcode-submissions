@@ -2123,9 +2123,492 @@ Think about:
 
 **Next Problem:** Product of Array Except Self.
 
+# NeetCode 150 – 07. Product of Array Except Self
+
+**Category:** Arrays & Hashing  
+**Pattern:** Prefix Product + Suffix Product  
+**Language:** C++
+
+## Problem
+
+Given an integer array `nums`, return an array `answer` such that:
+
+`answer[i]` is equal to the product of all elements of `nums` except `nums[i]`.
+
+**Important constraints:**
+- Do not use division.
+- Solve in O(n) time.
+- Use O(1) auxiliary space (output array does not count).
+
+### Example
+
+```cpp
+Input: nums = {1, 2, 3, 4}
+
+Output: {24, 12, 8, 6}
+```
+
+Explanation:
+
+- Index 0: 2 × 3 × 4 = 24
+- Index 1: 1 × 3 × 4 = 12
+- Index 2: 1 × 2 × 4 = 8
+- Index 3: 1 × 2 × 3 = 6
+
+---
+
+# Approach 1: Brute Force – Nested Loops
+
+## Logic
+
+For every index `i`:
+1. Initialize product = 1.
+2. Traverse the complete array.
+3. Skip the current index.
+4. Multiply all other elements.
+5. Store the result.
+
+## Code
+
+```cpp
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+
+        int n = nums.size();
+        vector<int> ans(n, 1);
+
+        for(int i = 0; i < n; i++) {
+
+            for(int j = 0; j < n; j++) {
+
+                if(i != j) {
+                    ans[i] *= nums[j];
+                }
+            }
+        }
+
+        return ans;
+    }
+};
+```
+
+## Complexity
+
+- Time: O(n²)
+- Auxiliary space: O(1), excluding output.
+
+## Limitation
+
+For every element, we traverse the entire array again.
+
+This becomes inefficient for large inputs.
+
+---
+
+# Approach 2: Using Division
+
+## Logic
+
+Instead of calculating the product repeatedly:
+
+1. Calculate the product of all non-zero elements.
+2. Count the number of zeros.
+3. Handle zero cases separately.
+4. If there are no zeros, divide the total product by each element.
+5. If there is exactly one zero, only the zero's position gets the product of all non-zero elements.
+6. If there are two or more zeros, every answer is zero.
+
+## Code
+
+```cpp
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+
+        int product = 1;
+        int zeroCount = 0;
+
+        for(int x : nums) {
+
+            if(x == 0) {
+                zeroCount++;
+            }
+            else {
+                product *= x;
+            }
+        }
+
+        vector<int> ans(nums.size(), 0);
+
+        if(zeroCount > 1) {
+            return ans;
+        }
+
+        for(int i = 0; i < nums.size(); i++) {
+
+            if(zeroCount == 1) {
+
+                if(nums[i] == 0) {
+                    ans[i] = product;
+                }
+            }
+            else {
+                ans[i] = product / nums[i];
+            }
+        }
+
+        return ans;
+    }
+};
+```
+
+## Complexity
+
+- Time: O(n)
+- Auxiliary space: O(1), excluding output.
+
+## Limitation
+
+- Division is not allowed in the original problem.
+- Integer overflow can occur while calculating the total product.
+
+**Interview note:** This is a useful mathematical alternative, but it is not a valid submission for the original NeetCode constraints.
+
+---
+
+# Approach 3: Prefix Array + Suffix Array
+
+## Logic
+
+Instead of multiplying every element repeatedly, calculate products from both directions.
+
+### Prefix Array
+
+`prefix[i]` stores the product of all elements to the left of index `i`.
+
+Example:
+
+```text
+nums   = [1, 2, 3, 4]
+prefix = [1, 1, 2, 6]
+```
+
+### Suffix Array
+
+`suffix[i]` stores the product of all elements to the right of index `i`.
+
+```text
+nums   = [1, 2, 3, 4]
+suffix = [24, 12, 4, 1]
+```
+
+### Final Formula
+
+```cpp
+ans[i] = prefix[i] * suffix[i];
+```
+
+Final output:
+
+```text
+[24, 12, 8, 6]
+```
+
+## Code
+
+```cpp
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+
+        int n = nums.size();
+
+        vector<int> prefix(n, 1);
+        vector<int> suffix(n, 1);
+        vector<int> ans(n);
+
+        for(int i = 1; i < n; i++) {
+            prefix[i] = prefix[i-1] * nums[i-1];
+        }
+
+        for(int i = n-2; i >= 0; i--) {
+            suffix[i] = suffix[i+1] * nums[i+1];
+        }
+
+        for(int i = 0; i < n; i++) {
+            ans[i] = prefix[i] * suffix[i];
+        }
+
+        return ans;
+    }
+};
+```
+
+## Complexity
+
+- Time: O(n)
+- Auxiliary space: O(n), for prefix and suffix arrays.
+
+## Advantage
+
+Easy to understand and demonstrates the relationship between prefix and suffix products.
+
+---
+
+# Approach 4: Prefix + Suffix Variables (Optimal)
+
+<badge color="success">Recommended interview solution</badge>
+
+This is the approach used in my accepted implementation.
+
+## Logic
+
+Instead of maintaining separate prefix and suffix arrays, use two variables:
+
+- `prefix` stores the product of elements to the left.
+- `suffix` stores the product of elements to the right.
+
+### First Loop – Prefix Product
+
+```cpp
+int prefix = 1;
+
+for(int i = 0; i < n; i++) {
+
+    output[i] = prefix;
+
+    prefix *= nums[i];
+}
+```
+
+This stores the product of all elements to the left of each index.
+
+For:
+
+```text
+nums = [1, 2, 3, 4]
+```
+
+After the first loop:
+
+```text
+output = [1, 1, 2, 6]
+```
+
+### Second Loop – Suffix Product
+
+```cpp
+int suffix = 1;
+
+for(int i = n-1; i >= 0; i--) {
+
+    output[i] *= suffix;
+
+    suffix *= nums[i];
+}
+```
+
+This multiplies each prefix product by the corresponding suffix product.
+
+Final output:
+
+```text
+[24, 12, 8, 6]
+```
+
+## Complete Code
+
+```cpp
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+
+        int n = nums.size();
+
+        vector<int> output(n, 1);
+
+        // Calculate prefix products
+        int prefix = 1;
+
+        for(int i = 0; i < n; i++) {
+
+            output[i] = prefix;
+
+            prefix *= nums[i];
+        }
+
+        // Multiply by suffix products
+        int suffix = 1;
+
+        for(int i = n - 1; i >= 0; i--) {
+
+            output[i] *= suffix;
+
+            suffix *= nums[i];
+        }
+
+        return output;
+    }
+};
+```
+
+## Dry Run
+
+Input:
+
+```text
+nums = [1, 2, 3, 4]
+```
+
+### First loop
+
+| Index | Current number | Prefix stored | Updated prefix |
+|---|---:|---:|---:|
+| 0 | 1 | 1 | 1 |
+| 1 | 2 | 1 | 2 |
+| 2 | 3 | 2 | 6 |
+| 3 | 4 | 6 | 24 |
+
+After prefix calculation:
+
+```text
+output = [1, 1, 2, 6]
+```
+
+### Second loop
+
+| Index | Prefix value | Suffix value | Final output |
+|---|---:|---:|---:|
+| 3 | 6 | 1 | 6 |
+| 2 | 2 | 4 | 8 |
+| 1 | 1 | 12 | 12 |
+| 0 | 1 | 24 | 24 |
+
+Final answer:
+
+```text
+[24, 12, 8, 6]
+```
+
+## Complexity
+
+- Time: O(n) – two traversals.
+- Auxiliary space: O(1), excluding the output array.
+
+## Why is this optimal?
+
+- No division.
+- No additional prefix array.
+- No additional suffix array.
+- Handles zero values naturally.
+- Linear time complexity.
+
+---
+
+# Important Edge Cases
+
+### 1. Array contains zero
+
+```text
+Input: [1, 2, 0, 4]
+
+Output: [0, 0, 8, 0]
+```
+
+The prefix/suffix approach handles this automatically.
+
+### 2. Array contains two zeros
+
+```text
+Input: [0, 2, 0, 4]
+
+Output: [0, 0, 0, 0]
+```
+
+### 3. Negative numbers
+
+```text
+Input: [-1, 1, 0, -3, 3]
+
+Output: [0, 0, 9, 0, 0]
+```
+
+### 4. Single element
+
+```text
+Input: [5]
+
+Output: [1]
+```
+
+There are no other elements to multiply, so the product is 1.
+
+---
+
+# Approach Comparison
+
+| Approach | Time | Auxiliary Space |
+|---|---|---|
+| Brute Force | O(n²) | O(1) |
+| Division | O(n) | O(1) |
+| Prefix + Suffix Arrays | O(n) | O(n) |
+| Prefix + Suffix Variables | O(n) | O(1) |
+
+---
+
+# Important Interview Questions
+
+**Q1. Why initialize prefix and suffix with 1?**
+
+Because 1 is the multiplicative identity. Multiplying by 1 does not change the product.
+
+**Q2. Why do we traverse backwards in the second loop?**
+
+Because we need the product of elements to the right of the current index.
+
+**Q3. How does the approach handle zeros?**
+
+If any element is zero, the corresponding products naturally become zero where required. No special zero handling is necessary.
+
+**Q4. Why is auxiliary space O(1)?**
+
+We only use two integer variables, `prefix` and `suffix`, apart from the output array.
+
+**Q5. Why can't we use division?**
+
+The original problem explicitly prohibits division.
+
+---
+
+# Interview Pattern Recognition
+
+When a problem asks you to:
+
+- Calculate products excluding the current element.
+- Find products of elements on the left or right.
+- Calculate cumulative products.
+- Avoid repeatedly traversing an array.
+
+Think about:
+
+**Prefix + Suffix Pattern**
+
+Other problems that use related concepts include:
+- Running Sum of Array
+- Range Sum Queries
+- Product of Array Except Self
+- Prefix Sum problems
+
+---
+
+# 30-Second Revision
+
+1. Brute Force: Multiply every element
 
 **Pattern:** Arrays & Hashing → Frequency Counting + Top K.
 
 **Status:** Completed.
 
 **Next Problem:** Product of Array Except Self.
+
