@@ -1638,6 +1638,492 @@ Choose the approach based on requirements:
 
 **Recommended interview preparation:** Understand all three approaches. Practise Min Heap and Bucket Sort independently.
 
+# NeetCode 150 – 06. Encode and Decode Strings
+
+**Category:** Arrays & Hashing  
+**Pattern:** String Manipulation / Serialization / Two Pointers  
+**Language:** C++
+
+## Problem
+
+Design an algorithm to encode a list of strings into a single string and decode that single string back into the original list.
+
+The decoded output must exactly match the original input.
+
+### Example
+
+```cpp
+Input: {"neet", "code", "love", "you"}
+
+Encoded:
+"4#neet4#code4#love3#you"
+
+Decoded:
+{"neet", "code", "love", "you"}
+```
+
+Important: Strings may contain special characters, including `#`.
+
+---
+
+# Approach 1: Length Prefix + Delimiter (Recommended)
+
+### Logic
+
+Instead of simply joining strings using a delimiter, store the length of each string before the actual string.
+
+Format:
+
+```text
+length#string
+```
+
+Example:
+
+```text
+neet → 4#neet
+code → 4#code
+love → 4#love
+you  → 3#you
+```
+
+Combined:
+
+```text
+4#neet4#code4#love3#you
+```
+
+The decoder first reads the length and then extracts exactly that many characters.
+
+This means even if the original string contains `#`, decoding still works correctly.
+
+## Code
+
+```cpp
+class Solution {
+public:
+
+    string encode(vector<string>& strs) {
+
+        string ans = "";
+
+        for(string &word : strs) {
+
+            ans += to_string(word.size());
+            ans += '#';
+            ans += word;
+        }
+
+        return ans;
+    }
+
+    vector<string> decode(string s) {
+
+        vector<string> ans;
+
+        int i = 0;
+
+        while(i < s.size()) {
+
+            // Find delimiter
+            int j = s.find('#', i);
+
+            // Extract length
+            int len = stoi(s.substr(i, j - i));
+
+            // Extract actual word
+            string word = s.substr(j + 1, len);
+
+            ans.push_back(word);
+
+            // Move to next encoded string
+            i = j + 1 + len;
+        }
+
+        return ans;
+    }
+};
+```
+
+## Understanding Decode Step by Step
+
+Consider:
+
+```text
+s = "4#neet4#code"
+```
+
+We use two pointers:
+
+- `i`: Starting position of the length.
+- `j`: Position of the delimiter `#`.
+
+### Step 1: Find delimiter
+
+```cpp
+int j = s.find('#', i);
+```
+
+Initially:
+
+```text
+4#neet4#code
+ ^
+ i
+```
+
+`j = 1`
+
+### Step 2: Extract length
+
+```cpp
+int len = stoi(s.substr(i, j-i));
+```
+
+`len = 4`
+
+### Step 3: Extract word
+
+```cpp
+string word = s.substr(j+1, len);
+```
+
+Extracted word:
+
+```text
+neet
+```
+
+### Step 4: Move to next string
+
+```cpp
+i = j + 1 + len;
+```
+
+Now:
+
+```text
+4#neet4#code
+      ^
+      i
+```
+
+The next iteration decodes `code`.
+
+### Dry Run
+
+| Iteration | i | j | Length | Word |
+|---|---:|---:|---:|---|
+| 1 | 0 | 1 | 4 | neet |
+| 2 | 6 | 7 | 4 | code |
+
+Output:
+
+```cpp
+{"neet", "code"}
+```
+
+## Complexity
+
+Let N be the total number of characters in all input strings.
+
+| Function | Time | Auxiliary Space |
+|---|---|---|
+| encode | O(N) | O(N) output |
+| decode | O(N) | O(N) output |
+
+---
+
+# Approach 2: Length Prefix + Manual Number Parsing
+
+This approach uses the same encoding format but avoids `stoi()` and `substr()` for extracting the length.
+
+It is useful for understanding character-by-character parsing.
+
+### Logic
+
+1. Find the length digits manually.
+2. Convert those digits into an integer.
+3. Skip the delimiter.
+4. Extract the required number of characters.
+5. Continue until the encoded string ends.
+
+### Code
+
+```cpp
+class Solution {
+public:
+
+    string encode(vector<string>& strs) {
+
+        string ans = "";
+
+        for(string &word : strs) {
+
+            ans += to_string(word.size());
+            ans += '#';
+            ans += word;
+        }
+
+        return ans;
+    }
+
+    vector<string> decode(string s) {
+
+        vector<string> ans;
+
+        int i = 0;
+
+        while(i < s.size()) {
+
+            int len = 0;
+
+            // Read the length digits
+            while(s[i] != '#') {
+
+                len = len * 10 + (s[i] - '0');
+
+                i++;
+            }
+
+            // Skip '#'
+            i++;
+
+            // Extract exactly len characters
+            string word = "";
+
+            for(int j = 0; j < len; j++) {
+
+                word += s[i];
+                i++;
+            }
+
+            ans.push_back(word);
+        }
+
+        return ans;
+    }
+};
+```
+
+### Understanding Number Conversion
+
+Suppose the encoded string starts with:
+
+```text
+12#HelloWorld!!
+```
+
+The manual conversion works like this:
+
+```cpp
+len = len * 10 + (s[i] - '0');
+```
+
+- First digit: `1` → len = 1
+- Second digit: `2` → len = 12
+
+Now we know that the next 12 characters belong to the string.
+
+### Complexity
+
+- Encoding: O(N)
+- Decoding: O(N)
+- Auxiliary space: O(N) for decoded output.
+
+**Advantage:** Demonstrates how integer parsing works internally without relying on `stoi()`.
+
+---
+
+# Approach 3: Delimiter-Only Encoding (Why It Fails)
+
+A common initial idea is to join strings using a separator such as `#`.
+
+### Example
+
+```cpp
+{"neet", "code", "love"}
+```
+
+Encoding:
+
+```text
+neet#code#love
+```
+
+Decoding:
+
+Split the string whenever `#` appears.
+
+### Problem
+
+Consider:
+
+```cpp
+{"neet#code", "love"}
+```
+
+Encoded result:
+
+```text
+neet#code#love
+```
+
+Now the decoder cannot determine whether the first string was:
+
+```text
+neet#code
+```
+
+or whether the input contained three separate strings:
+
+```text
+neet, code, love
+```
+
+Information is lost.
+
+### Conclusion
+
+Delimiter-only encoding is not reliable when the original strings can contain the delimiter.
+
+**Lesson:** Always design an encoding format that can be decoded unambiguously.
+
+---
+
+# Approach Comparison
+
+| Approach | Reliable? | Main concept |
+|---|---|---|
+| Length Prefix + Delimiter | Yes | Store length before string |
+| Manual Length Parsing | Yes | Parse digits manually |
+| Delimiter Only | No | Ambiguous when delimiter occurs in data |
+
+---
+
+# Important C++ Concepts
+
+## 1. to_string()
+
+Converts an integer into a string.
+
+```cpp
+int n = 123;
+
+string s = to_string(n);
+```
+
+Result: `"123"`
+
+## 2. stoi()
+
+Converts a numeric string into an integer.
+
+```cpp
+string s = "123";
+
+int n = stoi(s);
+```
+
+Result: `123`
+
+## 3. find()
+
+Finds the position of a character or substring.
+
+```cpp
+int j = s.find('#', i);
+```
+
+Searches for `#` starting from index `i`.
+
+## 4. substr()
+
+Extracts a substring.
+
+```cpp
+string word = s.substr(2, 4);
+```
+
+Arguments:
+- First: Starting index.
+- Second: Number of characters.
+
+## 5. Character to Integer Conversion
+
+```cpp
+int digit = s[i] - '0';
+```
+
+Converts a numeric character into its integer value.
+
+Example:
+
+`'5' - '0' = 5`
+
+---
+
+# Important Interview Learning
+
+### Why not use a class-level vector to store original strings?
+
+An initial implementation might store the original strings during encoding and return them directly during decoding.
+
+However, this is not actual decoding.
+
+The decoder must reconstruct the original strings using only the encoded string.
+
+The implementation should work independently, without depending on data saved during a previous function call.
+
+### Why use length prefix?
+
+Because the decoder knows exactly how many characters belong to each string.
+
+It does not matter if the original string contains:
+- `#`
+- Numbers
+- Spaces
+- Special characters
+
+The length determines where each string ends.
+
+---
+
+# Interview Pattern Recognition
+
+When a problem asks you to:
+
+- Convert multiple strings into one string.
+- Reconstruct original data.
+- Serialize and deserialize data.
+- Handle special characters without losing information.
+
+Think about:
+
+**Serialization + Length Prefix Encoding**
+
+---
+
+# 30-Second Revision
+
+1. Encoding: `length + delimiter + original string`.
+2. Decoding: Read length, skip delimiter, extract exact characters.
+3. `to_string()` converts integer to string.
+4. `stoi()` converts string to integer.
+5. `find()` locates delimiter.
+6. `substr()` extracts characters.
+7. Never depend on previously stored original data during decoding.
+8. Delimiter-only splitting can lose information.
+
+**Recommended interview solution:** Length Prefix + Delimiter.
+
+**Pattern:** Arrays & Hashing → Serialization / String Parsing.
+
+**Status:** Completed.
+
+**Next Problem:** Product of Array Except Self.
+
+
 **Pattern:** Arrays & Hashing → Frequency Counting + Top K.
 
 **Status:** Completed.
