@@ -3051,4 +3051,431 @@ Choose the data structure according to the problem:
 
 **Next Problem:** Longest Consecutive Sequence.
 
+# NeetCode 150 – 09. Longest Consecutive Sequence
+
+**Category:** Arrays & Hashing  
+**Pattern:** HashSet + Sequence Detection  
+**Language:** C++
+
+## Problem
+
+Given an unsorted array of integers `nums`, return the length of the longest consecutive elements sequence.
+
+The sequence must consist of consecutive integers, but the elements do not need to be adjacent in the original array.
+
+**Important:** The solution must run in O(n) time.
+
+### Example
+
+```cpp
+Input: nums = [100, 4, 200, 1, 3, 2]
+Output: 4
+```
+
+Explanation:
+
+The longest consecutive sequence is:
+
+```text
+1 → 2 → 3 → 4
+```
+
+Its length is 4.
+
+---
+
+# Approach 1: Brute Force
+
+## Logic
+
+For every number:
+
+1. Consider it as the starting number.
+2. Search the array for the next consecutive number.
+3. Continue until the next number is not found.
+4. Track the maximum sequence length.
+
+## Code
+
+```cpp
+class Solution {
+public:
+    int longestConsecutive(vector<int>& nums) {
+
+        int ans = 0;
+
+        for(int i = 0; i < nums.size(); i++) {
+
+            int current = nums[i];
+            int count = 1;
+
+            while(true) {
+
+                bool found = false;
+
+                for(int j = 0; j < nums.size(); j++) {
+
+                    if(nums[j] == current + 1) {
+                        current++;
+                        count++;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(!found) {
+                    break;
+                }
+            }
+
+            ans = max(ans, count);
+        }
+
+        return ans;
+    }
+};
+```
+
+## Complexity
+
+- Time: O(n³) in the worst case.
+- Space: O(1) auxiliary space.
+
+For each starting number, we may perform multiple full-array searches.
+
+**Limitation:** Too slow for large inputs.
+
+---
+
+# Approach 2: Sorting
+
+## Logic
+
+Sort the array.
+
+After sorting, consecutive numbers will appear next to each other.
+
+Example:
+
+```text
+Original: [100, 4, 200, 1, 3, 2]
+
+Sorted:   [1, 2, 3, 4, 100, 200]
+```
+
+Now traverse the sorted array:
+
+- If the current number is equal to the previous number, ignore the duplicate.
+- If it is exactly one greater, increase the current sequence length.
+- Otherwise, start a new sequence.
+
+## Code
+
+```cpp
+class Solution {
+public:
+    int longestConsecutive(vector<int>& nums) {
+
+        if(nums.empty()) {
+            return 0;
+        }
+
+        sort(nums.begin(), nums.end());
+
+        int count = 1;
+        int ans = 1;
+
+        for(int i = 1; i < nums.size(); i++) {
+
+            if(nums[i] == nums[i - 1]) {
+                continue;
+            }
+
+            if(nums[i] == nums[i - 1] + 1) {
+                count++;
+            }
+            else {
+                count = 1;
+            }
+
+            ans = max(ans, count);
+        }
+
+        return ans;
+    }
+};
+```
+
+## Complexity
+
+- Time: O(n log n) due to sorting.
+- Space: Depends on the sorting implementation; typically O(log n) auxiliary stack space for `std::sort`.
+
+**Advantage:** Simple and easy to understand.
+
+**Limitation:** Does not satisfy the problem's O(n) time requirement.
+
+---
+
+# Approach 3: HashSet – Optimal Solution
+
+<badge color="success">Recommended interview approach</badge>
+
+## Core Logic
+
+The important observation is:
+
+**Start counting only when the current number is the beginning of a sequence.**
+
+How do we identify the beginning?
+
+Check whether the previous number exists:
+
+```cpp
+if(st.find(num - 1) == st.end())
+```
+
+If `num - 1` does not exist, `num` is the starting point.
+
+Then keep checking:
+
+```text
+num + 1
+num + 2
+num + 3
+...
+```
+
+Stop when the next number does not exist.
+
+## Code
+
+```cpp
+class Solution {
+public:
+    int longestConsecutive(vector<int>& nums) {
+
+        unordered_set<int> st(nums.begin(), nums.end());
+
+        int ans = 0;
+
+        for(int num : st) {
+
+            // Check whether this is the beginning
+            // of a consecutive sequence
+            if(st.find(num - 1) == st.end()) {
+
+                int current = num;
+                int count = 1;
+
+                // Find the next consecutive numbers
+                while(st.find(current + 1) != st.end()) {
+
+                    current++;
+                    count++;
+                }
+
+                ans = max(ans, count);
+            }
+        }
+
+        return ans;
+    }
+};
+```
+
+## Dry Run
+
+Input:
+
+```cpp
+nums = [100, 4, 200, 1, 3, 2]
+```
+
+First, create a HashSet:
+
+```text
+{100, 4, 200, 1, 3, 2}
+```
+
+The iteration order of an unordered_set is not guaranteed. Consider the sequence beginning at 1.
+
+### Step 1: Check whether 1 is a starting number
+
+```cpp
+st.find(1 - 1)
+```
+
+0 does not exist.
+
+Therefore, 1 is a starting point.
+
+### Step 2: Find consecutive numbers
+
+| Current number | Next number exists? | Count |
+|---|---|---:|
+| 1 | 2 | 1 |
+| 2 | 3 | 2 |
+| 3 | 4 | 3 |
+| 4 | 5 does not exist | 4 |
+
+The sequence is:
+
+```text
+1 → 2 → 3 → 4
+```
+
+Update:
+
+```cpp
+ans = max(ans, 4);
+```
+
+### Step 3: Other numbers
+
+- 2: Skip because 1 exists.
+- 3: Skip because 2 exists.
+- 4: Skip because 3 exists.
+- 100: Starting point, sequence length 1.
+- 200: Starting point, sequence length 1.
+
+Final result:
+
+```text
+Output: 4
+```
+
+---
+
+# Why Does This Approach Run in O(n)?
+
+This is the most important interview question for this problem.
+
+At first glance, we have a `for` loop and a nested `while` loop.
+
+However, we only start the `while` loop when the number has no predecessor.
+
+For example:
+
+```text
+1 → 2 → 3 → 4
+```
+
+Only 1 starts the sequence.
+
+Numbers 2, 3 and 4 are skipped as starting points because their predecessors exist.
+
+Therefore, each consecutive sequence is traversed only once.
+
+With average O(1) HashSet lookup, total expected time complexity is O(n).
+
+## Complexity
+
+- Time: O(n) average.
+- Space: O(n) for the HashSet.
+
+---
+
+# Approach Comparison
+
+| Approach | Time Complexity | Auxiliary Space |
+|---|---|---|
+| Brute Force | O(n³) | O(1) |
+| Sorting | O(n log n) | Typically O(log n) |
+| HashSet | O(n) average | O(n) |
+
+---
+
+# Important C++ Concepts
+
+## 1. unordered_set
+
+Stores unique elements.
+
+```cpp
+unordered_set<int> st(nums.begin(), nums.end());
+```
+
+Duplicate numbers are automatically removed.
+
+## 2. find()
+
+```cpp
+st.find(num)
+```
+
+Returns an iterator to the element if found, otherwise returns `st.end()`.
+
+## 3. Range-based for loop
+
+```cpp
+for(int num : st) {
+    cout << num;
+}
+```
+
+Iterates directly over the elements of a container.
+
+## 4. max()
+
+```cpp
+ans = max(ans, count);
+```
+
+Keeps the maximum sequence length.
+
+---
+
+# Edge Cases
+
+| Input | Output | Reason |
+|---|---:|---|
+| `[]` | 0 | Empty array |
+| `[1]` | 1 | Only one number |
+| `[1, 2, 3, 4]` | 4 | Entire array is consecutive |
+| `[1, 1, 2, 2, 3]` | 3 | Duplicates do not increase sequence length |
+| `[100, 4, 200, 1, 3, 2]` | 4 | Longest sequence is 1–4 |
+| `[9, 8, 7, 6]` | 4 | Consecutive numbers in descending input order |
+
+---
+
+# Interview Pattern Recognition
+
+When a problem asks you to:
+
+- Find the longest consecutive sequence.
+- Check whether a number exists efficiently.
+- Work with an unsorted array.
+- Avoid sorting because linear time is required.
+
+Think about:
+
+**HashSet + Sequence Detection**
+
+The key optimization is to identify sequence starting points rather than repeatedly processing every number.
+
+---
+
+# 30-Second Revision
+
+1. Insert all numbers into an `unordered_set`.
+2. Iterate through the set.
+3. Check whether `num - 1` exists.
+4. If it exists, skip this number.
+5. If it does not exist, start a new sequence.
+6. Keep checking `current + 1`.
+7. Count consecutive numbers.
+8. Update the maximum answer.
+
+**Recommended approach:** HashSet.
+
+**Time:** O(n) average.  
+**Space:** O(n).
+
+**Pattern:** Arrays & Hashing → HashSet + Sequence Detection.
+
+**Status:** Notes prepared. Independent implementation still to be practised.
+
+**Next:** Move to the next NeetCode 150 topic after independently coding this solution.
+
 
