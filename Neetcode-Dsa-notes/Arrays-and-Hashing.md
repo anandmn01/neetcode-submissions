@@ -2612,3 +2612,443 @@ Other problems that use related concepts include:
 
 **Next Problem:** Product of Array Except Self.
 
+# NeetCode 150 – 08. Valid Sudoku
+
+**Category:** Arrays & Hashing  
+**Pattern:** Matrix Traversal + HashSet  
+**Language:** C++
+
+## Problem
+
+Given a 9 × 9 Sudoku board, determine whether it is valid.
+
+A valid Sudoku must satisfy:
+
+1. Each row must contain unique digits from 1–9.
+2. Each column must contain unique digits from 1–9.
+3. Each 3 × 3 sub-box must contain unique digits from 1–9.
+
+**Important:**
+- Empty cells are represented by `'.'`.
+- Empty cells should be ignored.
+- We only validate the existing numbers. We do not need to solve the Sudoku.
+- A partially filled board can be valid.
+
+---
+
+# Approach 1: Three HashSets (Recommended)
+
+## Logic
+
+We need to track three conditions simultaneously:
+
+- Rows: Have we already seen this number in the current row?
+- Columns: Have we already seen this number in the current column?
+- Boxes: Have we already seen this number in the current 3 × 3 box?
+
+Create three vectors of HashSets:
+
+```cpp
+vector<unordered_set<char>> rows(9);
+vector<unordered_set<char>> cols(9);
+vector<unordered_set<char>> boxes(9);
+```
+
+Each vector contains nine HashSets.
+
+## Important Box Index Formula
+
+```cpp
+int boxIndex = (i / 3) * 3 + (j / 3);
+```
+
+This formula identifies which 3 × 3 box contains the current cell.
+
+### Box Mapping
+
+| Box | Row range | Column range |
+|---|---|---|
+| 0 | 0–2 | 0–2 |
+| 1 | 0–2 | 3–5 |
+| 2 | 0–2 | 6–8 |
+| 3 | 3–5 | 0–2 |
+| 4 | 3–5 | 3–5 |
+| 5 | 3–5 | 6–8 |
+| 6 | 6–8 | 0–2 |
+| 7 | 6–8 | 3–5 |
+| 8 | 6–8 | 6–8 |
+
+### Example
+
+For cell `(4, 5)`:
+
+```cpp
+boxIndex = (4 / 3) * 3 + (5 / 3);
+         = 1 * 3 + 1;
+         = 4;
+```
+
+Therefore, this cell belongs to box 4.
+
+## Code
+
+```cpp
+class Solution {
+public:
+    bool isValidSudoku(vector<vector<char>>& board) {
+
+        vector<unordered_set<char>> rows(9);
+        vector<unordered_set<char>> cols(9);
+        vector<unordered_set<char>> boxes(9);
+
+        for(int i = 0; i < 9; i++) {
+
+            for(int j = 0; j < 9; j++) {
+
+                char num = board[i][j];
+
+                // Ignore empty cells
+                if(num == '.') {
+                    continue;
+                }
+
+                int boxIndex = (i / 3) * 3 + (j / 3);
+
+                // Check duplicates
+                if(rows[i].count(num) ||
+                   cols[j].count(num) ||
+                   boxes[boxIndex].count(num)) {
+
+                    return false;
+                }
+
+                // Insert number into all three sets
+                rows[i].insert(num);
+                cols[j].insert(num);
+                boxes[boxIndex].insert(num);
+            }
+        }
+
+        return true;
+    }
+};
+```
+
+## Dry Run
+
+Suppose the board contains:
+
+```text
+5 3 . | . 7 . | . . .
+6 . . | 1 9 5 | . . .
+. 9 8 | . . . | . 6 .
+```
+
+For the first cell `(0,0)`:
+
+```text
+num = 5
+row = 0
+column = 0
+boxIndex = 0
+```
+
+We insert `5` into:
+
+```text
+rows[0]
+cols[0]
+boxes[0]
+```
+
+When another `5` appears in the same row, column or box, the function returns false.
+
+## Complexity
+
+- Time: O(81) = O(1).
+- Space: O(81) = O(1).
+
+The board always has a fixed size of 9 × 9.
+
+---
+
+# Approach 2: Single HashSet with Unique Keys
+
+## Logic
+
+Instead of maintaining three separate vectors of HashSets, we can use one HashSet.
+
+The idea is to create three unique keys for every number:
+
+1. Row key.
+2. Column key.
+3. Box key.
+
+For example, if number `5` appears at `(0,0)`:
+
+```text
+row-0-5
+col-0-5
+box-0-5
+```
+
+If any generated key already exists, a duplicate is present.
+
+## Code
+
+```cpp
+class Solution {
+public:
+    bool isValidSudoku(vector<vector<char>>& board) {
+
+        unordered_set<string> seen;
+
+        for(int i = 0; i < 9; i++) {
+
+            for(int j = 0; j < 9; j++) {
+
+                char num = board[i][j];
+
+                if(num == '.') {
+                    continue;
+                }
+
+                int boxIndex = (i / 3) * 3 + (j / 3);
+
+                string rowKey = "row" + to_string(i) + num;
+                string colKey = "col" + to_string(j) + num;
+                string boxKey = "box" + to_string(boxIndex) + num;
+
+                if(seen.count(rowKey) ||
+                   seen.count(colKey) ||
+                   seen.count(boxKey)) {
+
+                    return false;
+                }
+
+                seen.insert(rowKey);
+                seen.insert(colKey);
+                seen.insert(boxKey);
+            }
+        }
+
+        return true;
+    }
+};
+```
+
+## Complexity
+
+- Time: O(81) = O(1), with fixed-size board and bounded key lengths.
+- Space: O(81) = O(1).
+
+## Advantages
+
+- Uses only one HashSet.
+- Demonstrates how to construct unique keys.
+- Useful for understanding composite-key hashing.
+
+## Limitation
+
+String creation and hashing introduce unnecessary overhead compared with three separate HashSets.
+
+---
+
+# Approach 3: Boolean Frequency Arrays
+
+## Logic
+
+Since Sudoku contains only digits 1–9, we don't need a HashSet.
+
+We can use Boolean arrays to track whether a digit has already appeared.
+
+Create:
+
+```cpp
+bool rows[9][10] = {};
+bool cols[9][10] = {};
+bool boxes[9][10] = {};
+```
+
+Here:
+- First dimension represents row, column or box.
+- Second dimension represents digit 1–9.
+
+For example:
+
+```cpp
+int digit = board[i][j] - '0';
+```
+
+If the digit is 5, its index is 5.
+
+## Code
+
+```cpp
+class Solution {
+public:
+    bool isValidSudoku(vector<vector<char>>& board) {
+
+        bool rows[9][10] = {};
+        bool cols[9][10] = {};
+        bool boxes[9][10] = {};
+
+        for(int i = 0; i < 9; i++) {
+
+            for(int j = 0; j < 9; j++) {
+
+                char c = board[i][j];
+
+                if(c == '.') {
+                    continue;
+                }
+
+                int digit = c - '0';
+
+                int boxIndex = (i / 3) * 3 + (j / 3);
+
+                if(rows[i][digit] ||
+                   cols[j][digit] ||
+                   boxes[boxIndex][digit]) {
+
+                    return false;
+                }
+
+                rows[i][digit] = true;
+                cols[j][digit] = true;
+                boxes[boxIndex][digit] = true;
+            }
+        }
+
+        return true;
+    }
+};
+```
+
+## Complexity
+
+- Time: O(81) = O(1).
+- Space: O(270) = O(1).
+
+The three Boolean arrays contain 9 × 10 elements each.
+
+## Advantages
+
+- No HashSet required.
+- Direct array indexing.
+- Fast duplicate checking.
+- Simple and efficient for a fixed digit range.
+
+---
+
+# Approach Comparison
+
+| Approach | Data Structure | Time | Space |
+|---|---|---|---|
+| Three HashSets | 3 vectors of HashSets | O(1) | O(1) |
+| Single HashSet | One HashSet of strings | O(1) | O(1) |
+| Boolean Arrays | 3 Boolean matrices | O(1) | O(1) |
+
+All three approaches are O(1) asymptotically because Sudoku always has a fixed 9 × 9 board.
+
+---
+
+# Important C++ Concepts
+
+## 1. unordered_set
+
+Stores unique values.
+
+```cpp
+unordered_set<char> st;
+
+st.insert('5');
+
+if(st.count('5')) {
+    cout << "Duplicate found";
+}
+```
+
+## 2. vector of unordered_sets
+
+```cpp
+vector<unordered_set<char>> rows(9);
+```
+
+Creates nine independent HashSets.
+
+## 3. count()
+
+```cpp
+rows[i].count(num)
+```
+
+Returns:
+- 1 if the element exists.
+- 0 if the element does not exist.
+
+## 4. Character to Integer Conversion
+
+```cpp
+int digit = board[i][j] - '0';
+```
+
+Converts a numeric character into an integer.
+
+Example:
+
+```cpp
+'5' - '0' = 5
+```
+
+## 5. Box Index Calculation
+
+```cpp
+int boxIndex = (i / 3) * 3 + (j / 3);
+```
+
+Maps each cell to one of the nine Sudoku boxes.
+
+---
+
+# Interview Pattern Recognition
+
+When a problem asks you to:
+
+- Check duplicates in rows and columns.
+- Validate a matrix.
+- Track unique values across multiple dimensions.
+- Check constraints in submatrices.
+
+Think about:
+
+**Matrix Traversal + HashSet / Boolean Array**
+
+Choose the data structure according to the problem:
+
+- HashSet: When tracking unique values.
+- Boolean Array: When the value range is small and fixed.
+- Single HashSet: When multiple conditions can be represented using unique keys.
+
+---
+
+# 30-Second Revision
+
+1. Traverse the 9 × 9 board.
+2. Ignore `'.'`.
+3. Check whether the digit exists in the current row.
+4. Check whether it exists in the current column.
+5. Check whether it exists in the current 3 × 3 box.
+6. Calculate box index using `(i / 3) * 3 + (j / 3)`.
+7. Return false if any duplicate exists.
+8. Otherwise return true.
+
+**Recommended interview solution:** Three HashSets or Boolean Arrays.
+
+**Pattern:** Arrays & Hashing → Matrix Validation + Duplicate Detection.
+
+**Status:** Notes prepared.
+
+**Next Problem:** Longest Consecutive Sequence.
+
+
