@@ -36,7 +36,7 @@ For an array of size "n", the total number of subsets is:
 2^n
 ]
 
-For example, 3 elements produce (2^3 = 8) subsets.
+For example, 3 elements produce (2³ = 8) subsets.
 
 ---
 
@@ -513,7 +513,7 @@ For every element:
 When all elements are processed:
     Save the current subset.
 
-    64. Combination Sum
+64. Combination Sum
 
 1. Problem Understanding
 
@@ -669,6 +669,8 @@ void backtrack(
     vector<int>& current,
     vector<vector<int>>& result
 )
+
+Each parameter has a specific responsibility:
 
 Parameter| Meaning
 "index"| Current candidate we are considering
@@ -1022,8 +1024,7 @@ Skip:
 
 Target == 0:
     Save the combination
-
-    65. Combination Sum II
+65. Combination Sum II
 
 1. Problem Understanding
 
