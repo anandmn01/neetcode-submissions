@@ -1,6 +1,6 @@
 # 63. Subsets
 
-1. Problem Understanding
+## 1. Problem Understanding
 
 You are given an integer array "nums" containing unique elements.
 
@@ -13,12 +13,15 @@ A subset can contain:
 - Multiple elements.
 - All elements.
 
-Example
+**Example**
 
+```cpp
 nums = {1, 2, 3};
+```
 
-Output:
+**Output:**
 
+```text
 [
   [],
   [1],
@@ -29,18 +32,19 @@ Output:
   [2, 3],
   [3]
 ]
+```
 
 For an array of size "n", the total number of subsets is:
 
-[
+\[
 2^n
-]
+\]
 
 For example, 3 elements produce (2³ = 8) subsets.
 
 ---
 
-2. Core Intuition
+## 2. Core Intuition
 
 For every element, we have two choices:
 
@@ -49,7 +53,9 @@ For every element, we have two choices:
 
 Let's take:
 
+```cpp
 nums = [1, 2, 3]
+```
 
 For element "1":
 
@@ -65,8 +71,9 @@ The same applies to element "3".
 
 This creates a decision tree.
 
-Decision Tree
+**Decision Tree**
 
+```text
                          []
                        /    \
                   Include 1  Skip 1
@@ -78,6 +85,7 @@ Decision Tree
           [1,2]       [1]     [2]        []
            / \         / \     / \       / \
          +3  -3       +3  -3  +3  -3   +3  -3
+```
 
 Every leaf represents one possible subset.
 
@@ -85,8 +93,9 @@ This is the foundation of the backtracking approach.
 
 ---
 
-3. Complete C++ Solution
+## 3. Complete C++ Solution
 
+```cpp
 class Solution {
 private:
 
@@ -127,42 +136,50 @@ public:
         return result;
     }
 };
+```
 
 ---
 
-4. Understanding the Backtracking Function
+## 4. Understanding the Backtracking Function
 
 Our helper function:
 
+```cpp
 void backtrack(
     int index,
     vector<int>& nums,
     vector<int>& current,
     vector<vector<int>>& result
 )
+```
 
 Each parameter has a specific responsibility:
 
-Parameter| Meaning
-"index"| Current element we are considering
-"nums"| Original input array
-"current"| Subset currently being constructed
-"result"| Stores all completed subsets
+| Parameter | Meaning |
+|---|---|
+| "index" | Current element we are considering |
+| "nums" | Original input array |
+| "current" | Subset currently being constructed |
+| "result" | Stores all completed subsets |
 
 We start with:
 
+```cpp
 backtrack(0, nums, current, result);
+```
 
 This means we begin considering elements from index "0".
 
 ---
 
-5. Understanding the Base Case
+## 5. Understanding the Base Case
 
+```cpp
 if (index == nums.size()) {
     result.push_back(current);
     return;
 }
+```
 
 When "index" reaches the array size, we have considered every element.
 
@@ -170,36 +187,46 @@ The current subset is now complete.
 
 We copy it into the result:
 
+```cpp
 result.push_back(current);
+```
 
 Important: We use "push_back(current)" to save a copy of the current subset, not a reference to the temporary vector.
 
 ---
 
-6. Understanding the Two Choices
+## 6. Understanding the Two Choices
 
 This is the most important part of the problem.
 
-Choice 1: Include the current element
+**Choice 1: Include the current element**
 
+```cpp
 current.push_back(nums[index]);
 
 backtrack(index + 1, nums, current, result);
+```
 
 Suppose:
 
+```cpp
 current = []
 nums[index] = 1
+```
 
 After including:
 
+```cpp
 current = [1]
+```
 
 Now recursively process the next element.
 
-Backtracking: Remove the element
+**Backtracking: Remove the element**
 
+```cpp
 current.pop_back();
+```
 
 Why?
 
@@ -207,15 +234,21 @@ Because after exploring the branch that includes "1", we must restore the previo
 
 Before:
 
+```cpp
 current = [1]
+```
 
 After:
 
+```cpp
 current = []
+```
 
-Choice 2: Skip the current element
+**Choice 2: Skip the current element**
 
+```cpp
 backtrack(index + 1, nums, current, result);
+```
 
 We simply move to the next element without including the current one.
 
@@ -223,86 +256,115 @@ This gives us both possibilities.
 
 ---
 
-7. Complete Dry Run
+## 7. Complete Dry Run
 
-Input:
+**Input:**
 
+```cpp
 nums = [1, 2]
+```
 
-Initial state:
+**Initial state:**
 
+```cpp
 current = []
 result = []
+```
 
-Step 1: Consider element 1
+**Step 1: Consider element 1**
 
 Include "1":
 
+```cpp
 current = [1]
+```
 
 Now consider element "2".
 
-Step 2: Include element 2
+**Step 2: Include element 2**
 
+```cpp
 current = [1, 2]
+```
 
 All elements processed.
 
 Save:
 
+```cpp
 result = [[1, 2]]
+```
 
-Step 3: Backtrack and skip element 2
+**Step 3: Backtrack and skip element 2**
 
 Remove "2":
 
+```cpp
 current = [1]
+```
 
 Save this subset:
 
+```cpp
 result = [[1, 2], [1]]
+```
 
-Step 4: Backtrack and skip element 1
+**Step 4: Backtrack and skip element 1**
 
 Remove "1":
 
+```cpp
 current = []
+```
 
 Now include element "2":
 
+```cpp
 current = [2]
+```
 
 Save:
 
+```cpp
 result = [[1, 2], [1], [2]]
+```
 
 Finally, skip element "2":
 
+```cpp
 current = []
+```
 
 Save:
 
+```cpp
 result = [[1, 2], [1], [2], []]
+```
 
-Final answer:
+**Final answer:**
 
+```text
 [
   [1, 2],
   [1],
   [2],
   []
 ]
+```
 
 The order of subsets does not matter.
 
 ---
 
-8. Visualizing the Complete Decision Tree
+## 8. Visualizing the Complete Decision Tree
 
 For:
 
+```cpp
 nums = [1, 2]
+```
 
+```text
                          []
                        /    \
                     Take 1  Skip 1
@@ -312,26 +374,27 @@ nums = [1, 2]
               Take 2 Skip 2 Take 2 Skip 2
                 /      \      /      \
              [1,2]    [1]    [2]      []
+```
 
 Each element creates two choices.
 
 Therefore:
 
-[
+\[
 2 \times 2 \times 2 = 2^n
-]
+\]
 
 For "n = 2":
 
-[
+\[
 2^2 = 4
-]
+\]
 
 We get exactly four subsets.
 
 ---
 
-9. Why Is This Called Backtracking?
+## 9. Why Is This Called Backtracking?
 
 Backtracking means:
 
@@ -342,6 +405,7 @@ Backtracking means:
 
 In this problem:
 
+```cpp
 current.push_back(nums[index]);  // Make choice
 
 backtrack(...);                  // Explore
@@ -349,6 +413,7 @@ backtrack(...);                  // Explore
 current.pop_back();              // Undo choice
 
 backtrack(...);                  // Explore alternative
+```
 
 The "pop_back()" operation is what restores the current subset before exploring the other branch.
 
@@ -358,17 +423,17 @@ Choose → Explore → Undo → Choose another option.
 
 ---
 
-10. Complexity Analysis
+## 10. Complexity Analysis
 
 Let "n" be the number of elements.
 
-Time Complexity
+**Time Complexity**
 
 There are:
 
-[
+\[
 2^n
-]
+\]
 
 possible subsets.
 
@@ -376,11 +441,11 @@ Copying each subset takes up to O(n) time.
 
 Therefore:
 
-[
+\[
 \boxed{O(n \times 2^n)}
-]
+\]
 
-Space Complexity
+**Space Complexity**
 
 - Recursion depth: O(n).
 - Current subset: O(n).
@@ -390,7 +455,7 @@ The auxiliary space excluding the output is O(n).
 
 ---
 
-11. Common Interview Mistakes
+## 11. Common Interview Mistakes
 
 1. Forgetting the empty subset: The empty subset is also valid.
 2. Forgetting "pop_back()": This causes elements from one branch to remain in another branch.
@@ -401,10 +466,11 @@ The auxiliary space excluding the output is O(n).
 
 ---
 
-12. Alternative Approach: For Loop Backtracking
+## 12. Alternative Approach: For Loop Backtracking
 
 There is another common way to solve this problem.
 
+```cpp
 class Solution {
 private:
 
@@ -440,14 +506,16 @@ public:
         return result;
     }
 };
+```
 
-Difference Between Both Approaches
+**Difference Between Both Approaches**
 
-Include/Skip approach| For-loop approach
-Makes two explicit choices| Loops through available choices
-Base case when all elements are processed| Saves current subset at every call
-Easy to understand binary decisions| Common reusable combination pattern
-Uses recursion with two branches| Uses recursion with a loop
+| Include/Skip approach | For-loop approach |
+|---|---|
+| Makes two explicit choices | Loops through available choices |
+| Base case when all elements are processed | Saves current subset at every call |
+| Easy to understand binary decisions | Common reusable combination pattern |
+| Uses recursion with two branches | Uses recursion with a loop |
 
 Both approaches are correct.
 
@@ -455,7 +523,7 @@ For learning the decision-making concept, the first approach is especially usefu
 
 ---
 
-13. Pattern Recognition for Interviews
+## 13. Pattern Recognition for Interviews
 
 Think about backtracking when a problem asks you to generate:
 
@@ -473,34 +541,35 @@ If yes, backtracking may be appropriate.
 
 ---
 
-14. 30-Second Interview Revision
+## 14. 30-Second Interview Revision
 
-Q1. What is a subset?
+**Q1. What is a subset?**
 
 A selection of zero or more elements from an array, without changing their relative order.
 
-Q2. How many subsets exist for n elements?
+**Q2. How many subsets exist for n elements?**
 
 (2^n).
 
-Q3. Why use backtracking?
+**Q3. Why use backtracking?**
 
 Because each element has two choices: include it or skip it.
 
-Q4. Why use "pop_back()"?
+**Q4. Why use "pop_back()"?**
 
 To undo the previous choice before exploring another branch.
 
-Q5. What is the time complexity?
+**Q5. What is the time complexity?**
 
 O(n × 2ⁿ), because there are 2ⁿ subsets and copying each subset can take O(n).
 
-Q6. Is the empty subset valid?
+**Q6. Is the empty subset valid?**
 
 Yes. Every set has an empty subset.
 
-Final takeaway
+**Final takeaway**
 
+```text
 SUBSETS = INCLUDE OR SKIP
 
 For every element:
@@ -512,10 +581,11 @@ For every element:
 
 When all elements are processed:
     Save the current subset.
+```
 
 # 64. Combination Sum
 
-1. Problem Understanding
+## 1. Problem Understanding
 
 You are given:
 
@@ -524,25 +594,29 @@ You are given:
 
 Find all unique combinations where the chosen numbers add up to "target".
 
-Important rules:
+**Important rules:**
 
 1. You can use the same number unlimited times.
 2. The order of numbers in a combination does not matter.
 3. Return all unique combinations.
 
-Example
+**Example**
 
+```cpp
 nums = {2, 3, 6, 7};
 target = 7;
+```
 
-Output:
+**Output:**
 
+```text
 [
     [2, 2, 3],
     [7]
 ]
+```
 
-Explanation:
+**Explanation:**
 
 - "2 + 2 + 3 = 7"
 - "7 = 7"
@@ -551,7 +625,7 @@ We cannot use combinations such as "[3, 2, 2]" separately because they contain t
 
 ---
 
-2. Core Intuition
+## 2. Core Intuition
 
 We use Backtracking.
 
@@ -566,32 +640,41 @@ When we include a number, we stay at the same index because we can reuse it.
 
 Consider:
 
+```cpp
 nums = [2, 3, 6, 7]
 target = 7
+```
 
 We start with "2".
 
+```cpp
 current = [2]
 remaining target = 5
+```
 
 We can select "2" again:
 
+```cpp
 current = [2, 2]
 remaining target = 3
+```
 
 We can select "2" again, but that would make the sum exceed the target.
 
 Instead, we explore the next candidate:
 
+```cpp
 current = [2, 2, 3]
 remaining target = 0
+```
 
 We found a valid combination.
 
 ---
 
-3. Complete C++ Solution
+## 3. Complete C++ Solution
 
+```cpp
 class Solution {
 private:
 
@@ -657,11 +740,13 @@ public:
         return result;
     }
 };
+```
 
 ---
 
-4. Understanding the Parameters
+## 4. Understanding the Parameters
 
+```cpp
 void backtrack(
     int index,
     vector<int>& nums,
@@ -669,15 +754,17 @@ void backtrack(
     vector<int>& current,
     vector<vector<int>>& result
 )
+```
 
 Each parameter has a specific responsibility:
 
-Parameter| Meaning
-"index"| Current candidate we are considering
-"nums"| Original array
-"target"| Remaining sum we need to achieve
-"current"| Combination currently being constructed
-"result"| Stores all valid combinations
+| Parameter | Meaning |
+|---|---|
+| "index" | Current candidate we are considering |
+| "nums" | Original array |
+| "target" | Remaining sum we need to achieve |
+| "current" | Combination currently being constructed |
+| "result" | Stores all valid combinations |
 
 Notice that we use "target" as the remaining sum rather than repeatedly calculating the sum of "current".
 
@@ -685,29 +772,35 @@ This makes the implementation simpler.
 
 ---
 
-5. Understanding the Base Cases
+## 5. Understanding the Base Cases
 
-Case 1: Target becomes zero
+**Case 1: Target becomes zero**
 
+```cpp
 if (target == 0) {
     result.push_back(current);
     return;
 }
+```
 
 This means the current combination has exactly reached the required sum.
 
 Example:
 
+```cpp
 current = [2, 2, 3]
 target = 0
+```
 
 We save the combination.
 
-Case 2: No candidates remain
+**Case 2: No candidates remain**
 
+```cpp
 if (index == nums.size()) {
     return;
 }
+```
 
 We have no more numbers available to explore.
 
@@ -715,13 +808,15 @@ Therefore, this path cannot produce another combination.
 
 ---
 
-6. The Most Important Concept: Same Index vs Next Index
+## 6. The Most Important Concept: Same Index vs Next Index
 
 Look at these two calls:
 
-Include the current number
+**Include the current number**
 
+```cpp
 backtrack(index, nums, target - nums[index], current, result);
+```
 
 We use the same "index".
 
@@ -731,71 +826,90 @@ Because the problem allows unlimited reuse of a candidate.
 
 Example:
 
+```cpp
 nums = [2, 3, 6, 7]
+```
 
 We can select "2" repeatedly:
 
+```text
 [2]
 [2, 2]
 [2, 2, 2]
+```
 
-Skip the current number
+**Skip the current number**
 
+```cpp
 backtrack(index + 1, nums, target, current, result);
+```
 
 We move to the next index because we have decided not to use the current candidate anymore.
 
 Remember this distinction:
 
-Decision| Next index
-Include current number| "index"
-Skip current number| "index + 1"
+| Decision | Next index |
+|---|---|
+| Include current number | "index" |
+| Skip current number | "index + 1" |
 
 This is the central logic of Combination Sum.
 
 ---
 
-7. Complete Dry Run
+## 7. Complete Dry Run
 
-Input:
+**Input:**
 
+```cpp
 nums = [2, 3, 6, 7]
 target = 7
+```
 
-Initially:
+**Initially:**
 
+```cpp
 index = 0
 target = 7
 current = []
+```
 
-Step 1: Include 2
+**Step 1: Include 2**
 
+```cpp
 current = [2]
 target = 5
 index = 0
+```
 
 We stay at index "0".
 
-Step 2: Include 2 again
+**Step 2: Include 2 again**
 
+```cpp
 current = [2, 2]
 target = 3
 index = 0
+```
 
 Again, we stay at index "0".
 
-Step 3: Try including 2 again
+**Step 3: Try including 2 again**
 
 2 <= 3
 
 So we can include it:
 
+```cpp
 current = [2, 2, 2]
 target = 1
+```
 
 Now:
 
+```text
 2 > 1
+```
 
 We cannot include "2".
 
@@ -803,7 +917,9 @@ We skip it and move to index "1", where the candidate is "3".
 
 But:
 
+```text
 3 > 1
+```
 
 We cannot include "3" either.
 
@@ -813,55 +929,70 @@ This path is invalid.
 
 Backtracking removes the last selected numbers and explores other possibilities.
 
-Step 4: Find [2, 2, 3]
+**Step 4: Find [2, 2, 3]**
 
 After returning to:
 
+```cpp
 current = [2, 2]
 target = 3
+```
 
 We skip candidate "2" and move to candidate "3".
 
 Include "3":
 
+```cpp
 current = [2, 2, 3]
 target = 0
+```
 
 Save:
 
+```cpp
 result = [[2, 2, 3]]
+```
 
-Step 5: Explore the combination [7]
+**Step 5: Explore the combination [7]**
 
 After exploring the branches starting with "2", we backtrack and skip "2", "3" and "6".
 
 We reach candidate "7":
 
+```cpp
 current = [7]
 target = 0
+```
 
 Save:
 
+```cpp
 result = [[2, 2, 3], [7]]
+```
 
-Final output:
+**Final output:**
 
+```text
 [
     [2, 2, 3],
     [7]
 ]
+```
 
 ---
 
-8. Visual Decision Tree
+## 8. Visual Decision Tree
 
 For:
 
+```cpp
 nums = [2, 3]
 target = 7
+```
 
 A simplified view:
 
+```text
                          []
                     target = 7
                      /       \
@@ -879,6 +1010,7 @@ A simplified view:
              |       result       |
         [2,2,3]                 [3,3]
         target=0               target=1
+```
 
 Every time we include a number, we can choose it again.
 
@@ -886,22 +1018,28 @@ Every time we skip a number, we move forward.
 
 ---
 
-9. Why Don't We Get Duplicate Combinations?
+## 9. Why Don't We Get Duplicate Combinations?
 
 Suppose:
 
+```cpp
 nums = [2, 3]
 target = 7
+```
 
 We only explore candidates in their original order.
 
 We can generate:
 
+```text
 [2, 2, 3]
+```
 
 But we never generate:
 
+```text
 [3, 2, 2]
+```
 
 Why?
 
@@ -911,7 +1049,7 @@ This prevents different orderings of the same combination from being generated.
 
 ---
 
-10. Complexity Analysis
+## 10. Complexity Analysis
 
 Let:
 
@@ -923,17 +1061,17 @@ The recursion can explore many combinations, so the time complexity is exponenti
 
 A commonly used upper-bound style estimate is:
 
-[
+\[
 O(n^{T/m})
-]
+\]
 
 This describes the branching search roughly; the exact number of recursive states depends on the candidate values.
 
 Space complexity excluding the output:
 
-[
+\[
 O(T/m)
-]
+\]
 
 This represents the maximum recursion depth and current combination length, assuming all candidates are positive integers.
 
@@ -941,7 +1079,7 @@ The output itself can also be large and must be counted separately.
 
 ---
 
-11. Common Interview Mistakes
+## 11. Common Interview Mistakes
 
 1. Using "index + 1" when including a number: This prevents unlimited reuse.
 2. Using "index" when skipping a number: This can repeatedly reconsider the same candidate.
@@ -953,23 +1091,24 @@ The output itself can also be large and must be counted separately.
 
 ---
 
-# 12. Subsets vs Combination Sum
+## 12. Subsets vs Combination Sum
 
 This comparison is especially important because both problems use backtracking.
 
-Feature| Subsets| Combination Sum
-Include or skip| Yes| Yes
-Reuse elements| No| Yes
-Include recursive call| "index + 1"| "index"
-Skip recursive call| "index + 1"| "index + 1"
-Main stopping condition| All elements processed| Target becomes zero
-Goal| Generate every subset| Find combinations matching target
+| Feature | Subsets | Combination Sum |
+|---|---|---|
+| Include or skip | Yes | Yes |
+| Reuse elements | No | Yes |
+| Include recursive call | "index + 1" | "index" |
+| Skip recursive call | "index + 1" | "index + 1" |
+| Main stopping condition | All elements processed | Target becomes zero |
+| Goal | Generate every subset | Find combinations matching target |
 
 The most important difference is the recursive call after including an element.
 
 ---
 
-13. Pattern Recognition for Interviews
+## 13. Pattern Recognition for Interviews
 
 Think about this pattern when a problem asks you to:
 
@@ -987,30 +1126,31 @@ After choosing an element, am I allowed to choose it again?
 
 ---
 
-14. 30-Second Interview Revision
+## 14. 30-Second Interview Revision
 
-Q1. Why use backtracking?
+**Q1. Why use backtracking?**
 
 We need to explore different combinations of candidates that can reach the target.
 
-Q2. Can we reuse the same candidate?
+**Q2. Can we reuse the same candidate?**
 
 Yes, unlimited times.
 
-Q3. Why do we call "backtrack(index, ...)" after including a number?
+**Q3. Why do we call "backtrack(index, ...)" after including a number?**
 
 To allow that same number to be selected again.
 
-Q4. Why do we call "backtrack(index + 1, ...)" when skipping?
+**Q4. Why do we call "backtrack(index + 1, ...)" when skipping?**
 
 Because we have decided not to use the current candidate in this branch.
 
-Q5. How do we avoid duplicate combinations?
+**Q5. How do we avoid duplicate combinations?**
 
 We process candidates in a fixed order and never move backward.
 
-Final takeaway
+**Final takeaway**
 
+```text
 COMBINATION SUM
 
 Include:
@@ -1024,10 +1164,12 @@ Skip:
 
 Target == 0:
     Save the combination
-    
+```
+
+
 # 65. Combination Sum II
 
-1. Problem Understanding
+## 1. Problem Understanding
 
 You are given:
 
@@ -1036,25 +1178,29 @@ You are given:
 
 Find all unique combinations where the chosen numbers add up to "target".
 
-Important rules:
+**Important rules:**
 
 1. Each candidate can be used at most once.
 2. The input may contain duplicate values.
 3. The answer must not contain duplicate combinations.
 
-Example
+**Example**
 
+```cpp
 candidates = {10, 1, 2, 7, 6, 1, 5};
 target = 8;
+```
 
-Output:
+**Output:**
 
+```text
 [
     [1, 1, 6],
     [1, 2, 5],
     [1, 7],
     [2, 6]
 ]
+```
 
 Notice that the input contains two "1"s, so we can use both of them in "[1, 1, 6]".
 
@@ -1062,7 +1208,7 @@ However, we must not generate "[1, 7]" twice.
 
 ---
 
-2. Core Intuition
+## 2. Core Intuition
 
 We use Backtracking, just like Combination Sum.
 
@@ -1073,17 +1219,21 @@ But there are two important changes:
 
 Sorting also allows us to skip duplicate values at the same recursion level.
 
-Step 1: Sort the array
+**Step 1: Sort the array**
 
 Original:
 
+```text
 [10, 1, 2, 7, 6, 1, 5]
+```
 
 After sorting:
 
+```text
 [1, 1, 2, 5, 6, 7, 10]
+```
 
-Step 2: Explore combinations
+**Step 2: Explore combinations**
 
 For each candidate:
 
@@ -1092,7 +1242,7 @@ For each candidate:
 - Remove it (backtrack).
 - Try another candidate.
 
-Step 3: Skip duplicates
+**Step 3: Skip duplicates**
 
 If two adjacent candidates have the same value at the same recursion level, skip the second one.
 
@@ -1100,8 +1250,9 @@ This prevents generating the same combination through different choices of ident
 
 ---
 
-3. Complete C++ Solution
+## 3. Complete C++ Solution
 
+```cpp
 class Solution {
 private:
 
@@ -1166,14 +1317,17 @@ public:
         return result;
     }
 };
+```
 
 ---
 
-4. Understanding the Three Most Important Lines
+## 4. Understanding the Three Most Important Lines
 
-A. Sorting
+**A. Sorting**
 
+```cpp
 sort(candidates.begin(), candidates.end());
+```
 
 Why?
 
@@ -1181,19 +1335,25 @@ Because duplicate values become adjacent.
 
 Example:
 
+```text
 [10, 1, 2, 7, 6, 1, 5]
+```
 
 Becomes:
 
+```text
 [1, 1, 2, 5, 6, 7, 10]
+```
 
 Now we can easily identify duplicates and stop early when values exceed the remaining target.
 
-B. Skipping duplicates
+**B. Skipping duplicates**
 
+```cpp
 if (i > start && candidates[i] == candidates[i - 1]) {
     continue;
 }
+```
 
 This is the most important line in Combination Sum II.
 
@@ -1201,22 +1361,30 @@ Let's understand it.
 
 Suppose:
 
+```cpp
 candidates = [1, 1, 2]
+```
 
 At the first recursion level:
 
+```cpp
 start = 0
+```
 
 - "i = 0": Select the first "1".
 - "i = 1": The value is also "1".
 
 Since:
 
+```cpp
 i > start
+```
 
 and:
 
+```cpp
 candidates[i] == candidates[i - 1]
+```
 
 we skip the second "1" at this level.
 
@@ -1228,8 +1396,10 @@ When the first "1" is selected, recursion starts from index "1".
 
 At that new level:
 
+```cpp
 start = 1
 i = 1
+```
 
 Now "i > start" is false, so the second "1" can be selected.
 
@@ -1237,9 +1407,11 @@ This is exactly what we want.
 
 Important distinction: We skip duplicate choices at the same recursion level, not duplicate values at every level.
 
-C. Moving to the next index
+**C. Moving to the next index**
 
+```cpp
 backtrack(i + 1, candidates, target - candidates[i], current, result);
+```
 
 Why "i + 1"?
 
@@ -1247,28 +1419,35 @@ Because every array element can be used only once.
 
 Compare this with Combination Sum:
 
-Problem| Recursive call after choosing
-Combination Sum| "backtrack(i, ...)"
-Combination Sum II| "backtrack(i + 1, ...)"
+| Problem | Recursive call after choosing |
+|---|---|
+| Combination Sum | "backtrack(i, ...)" |
+| Combination Sum II | "backtrack(i + 1, ...)" |
 
 ---
 
-5. Understanding the Early Stopping Condition
+## 5. Understanding the Early Stopping Condition
 
+```cpp
 if (candidates[i] > target) {
     break;
 }
+```
 
 Because the array is sorted, if the current candidate is greater than the remaining target, every candidate after it will also be too large.
 
 Example:
 
+```cpp
 candidates = [1, 2, 5, 6, 7]
 target = 4
+```
 
 When we reach "5":
 
+```text
 5 > 4
+```
 
 There is no reason to check "6" or "7".
 
@@ -1276,35 +1455,45 @@ We can stop the loop.
 
 ---
 
-6. Complete Dry Run
+## 6. Complete Dry Run
 
-Input:
+**Input:**
 
+```cpp
 candidates = [1, 1, 2, 5, 6, 7, 10]
 target = 8
+```
 
-Initially:
+**Initially:**
 
+```cpp
 current = []
 target = 8
 start = 0
+```
 
-Combination 1: [1, 1, 6]
+**Combination 1: [1, 1, 6]**
 
 Select the first "1":
 
+```cpp
 current = [1]
 remaining target = 7
+```
 
 Select the second "1":
 
+```cpp
 current = [1, 1]
 remaining target = 6
+```
 
 Select "2":
 
+```cpp
 current = [1, 1, 2]
 remaining target = 4
+```
 
 No remaining candidate can complete the combination.
 
@@ -1312,91 +1501,118 @@ Backtrack and remove "2".
 
 Select "5":
 
+```cpp
 current = [1, 1, 5]
 remaining target = 1
+```
 
 This path also fails.
 
 Backtrack and select "6" instead:
 
+```cpp
 current = [1, 1, 6]
 remaining target = 0
+```
 
 Save:
 
+```text
 [1, 1, 6]
+```
 
-Combination 2: [1, 2, 5]
+**Combination 2: [1, 2, 5]**
 
 Backtrack to:
 
+```cpp
 current = [1]
 remaining target = 7
+```
 
 Skip the second "1" at this recursion level.
 
 Select "2":
 
+```cpp
 current = [1, 2]
 remaining target = 5
+```
 
 Select "5":
 
+```cpp
 current = [1, 2, 5]
 remaining target = 0
+```
 
 Save:
 
+```text
 [1, 2, 5]
+```
 
-Combination 3: [1, 7]
+**Combination 3: [1, 7]**
 
 Backtrack and explore the next available candidate after "2".
 
 Select "7":
 
+```cpp
 current = [1, 7]
 remaining target = 0
+```
 
 Save:
 
+```text
 [1, 7]
+```
 
-Combination 4: [2, 6]
+**Combination 4: [2, 6]**
 
 Backtrack to the root and skip duplicate "1" choices at that level.
 
 Select "2":
 
+```cpp
 current = [2]
 remaining target = 6
+```
 
 Select "6":
 
+```cpp
 current = [2, 6]
 remaining target = 0
+```
 
 Save:
 
+```text
 [2, 6]
+```
 
-Final result:
+**Final result:**
 
+```text
 [
     [1, 1, 6],
     [1, 2, 5],
     [1, 7],
     [2, 6]
 ]
+```
 
 The order of combinations in the returned answer does not matter.
 
 ---
 
-7. Visualizing the Recursion
+## 7. Visualizing the Recursion
 
 A simplified decision tree:
 
+```text
                      []
                   target = 8
                  /    |     \
@@ -1411,6 +1627,7 @@ A simplified decision tree:
         6       5      0
         |       |
    [1,1,6]  [1,2,5]
+```
 
 Notice:
 
@@ -1420,7 +1637,7 @@ Notice:
 
 ---
 
-8. Complexity Analysis
+## 8. Complexity Analysis
 
 Let:
 
@@ -1428,7 +1645,7 @@ Let:
 - "T" = target.
 - "m" = smallest candidate.
 
-Time Complexity
+**Time Complexity**
 
 - Sorting: O(n log n).
 - Backtracking: Exponential in the worst case because we explore combinations.
@@ -1436,7 +1653,7 @@ Time Complexity
 
 The actual number of explored branches is often smaller because of duplicate skipping and early stopping.
 
-Space Complexity
+**Space Complexity**
 
 - Sorting: O(log n) auxiliary stack space on typical implementations.
 - Recursion depth: O(n).
@@ -1447,7 +1664,7 @@ Auxiliary space excluding output: O(n).
 
 ---
 
-9. Common Interview Mistakes
+## 9. Common Interview Mistakes
 
 1. Forgetting to sort: Duplicate skipping depends on adjacent equal values.
 2. Using "i + 1" incorrectly: Use it in the recursive call because elements cannot be reused.
@@ -1458,37 +1675,44 @@ Auxiliary space excluding output: O(n).
 
 ---
 
-10. Combination Sum vs Combination Sum II
+## 10. Combination Sum vs Combination Sum II
 
 This is one of the most important comparisons for interviews.
 
-Feature| Combination Sum| Combination Sum II
-Reuse candidates| Unlimited| Once per index
-Input duplicates| Distinct candidates| May contain duplicates
-Sorting required| Not necessary| Yes, for this approach
-Include recursive call| "i"| "i + 1"
-Duplicate skipping| Not required| Required
-Early break after exceeding target| Possible if sorted| Yes
+| Feature | Combination Sum | Combination Sum II |
+|---|---|---|
+| Reuse candidates | Unlimited | Once per index |
+| Input duplicates | Distinct candidates | May contain duplicates |
+| Sorting required | Not necessary | Yes, for this approach |
+| Include recursive call | "i" | "i + 1" |
+| Duplicate skipping | Not required | Required |
+| Early break after exceeding target | Possible if sorted | Yes |
 
-Remember these two lines
+**Remember these two lines**
 
 Combination Sum:
 
+```cpp
 backtrack(i, ...);
+```
 
 Combination Sum II:
 
+```cpp
 backtrack(i + 1, ...);
+```
 
 And the duplicate-skipping condition:
 
+```cpp
 if (i > start && candidates[i] == candidates[i - 1]) {
     continue;
 }
+```
 
 ---
 
-11. Pattern Recognition for Interviews
+## 11. Pattern Recognition for Interviews
 
 Think about this pattern when a problem asks you to:
 
@@ -1501,30 +1725,31 @@ The combination of sorting, DFS and backtracking is a common solution pattern.
 
 ---
 
-12. 30-Second Interview Revision
+## 12. 30-Second Interview Revision
 
-Q1. Why sort the candidates?
+**Q1. Why sort the candidates?**
 
 To group duplicate values together and enable early stopping.
 
-Q2. Why use "i + 1"?
+**Q2. Why use "i + 1"?**
 
 Each candidate index can be used only once.
 
-Q3. Why use "i > start" in duplicate skipping?
+**Q3. Why use "i > start" in duplicate skipping?**
 
 To skip identical choices at the same recursion level while still allowing duplicate values to be selected at different levels.
 
-Q4. Can we select two equal numbers?
+**Q4. Can we select two equal numbers?**
 
 Yes, if they are separate elements in the input array.
 
-Q5. Why use "break" when candidate exceeds target?
+**Q5. Why use "break" when candidate exceeds target?**
 
 The array is sorted, so all later candidates will also exceed the remaining target.
 
-Final takeaway
+**Final takeaway**
 
+```text
 COMBINATION SUM II
 
 1. Sort candidates.
@@ -1537,3 +1762,4 @@ COMBINATION SUM II
 5. Recurse using i + 1.
 6. Backtrack using pop_back().
 7. Save when target == 0.
+```
