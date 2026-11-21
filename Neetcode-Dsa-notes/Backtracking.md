@@ -1,4 +1,4 @@
-63. Subsets
+# 63. Subsets
 
 1. Problem Understanding
 
@@ -513,7 +513,7 @@ For every element:
 When all elements are processed:
     Save the current subset.
 
-64. Combination Sum
+# 64. Combination Sum
 
 1. Problem Understanding
 
@@ -953,7 +953,7 @@ The output itself can also be large and must be counted separately.
 
 ---
 
-12. Subsets vs Combination Sum
+# 12. Subsets vs Combination Sum
 
 This comparison is especially important because both problems use backtracking.
 
@@ -1024,7 +1024,8 @@ Skip:
 
 Target == 0:
     Save the combination
-65. Combination Sum II
+    
+# 65. Combination Sum II
 
 1. Problem Understanding
 
