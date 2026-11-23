@@ -6595,3 +6595,785 @@ LETTER COMBINATIONS = MAPPING + BACKTRACKING
 8. When all digits are processed:
        Save the combination.
 ```
+# 72. N-Queens
+
+## 1. Problem Understanding
+
+You are given an integer `n`.
+
+Place `n` queens on an `n × n` chessboard such that no two queens can attack each other.
+
+Return all distinct solutions.
+
+**Important rules:**
+
+1. A queen can attack horizontally.
+2. A queen can attack vertically.
+3. A queen can attack diagonally.
+4. No two queens can attack each other.
+5. Each solution must contain exactly `n` queens.
+
+The board uses:
+
+- `Q` to represent a queen.
+- `.` to represent an empty cell.
+
+**Example 1**
+
+```cpp
+n = 4;
+```
+
+**Output:**
+
+```text
+[
+    [".Q..", "...Q", "Q...", "..Q."],
+    ["..Q.", "Q...", "...Q", ".Q.."]
+]
+```
+
+There are two valid solutions for the 4-Queens problem.
+
+**Example 2**
+
+```cpp
+n = 1;
+```
+
+**Output:**
+
+```text
+[
+    ["Q"]
+]
+```
+
+---
+
+## 2. Core Intuition
+
+We use **Backtracking**.
+
+The idea is to place queens row by row.
+
+For each row:
+
+1. Try placing a queen in every column.
+2. Check whether the position is safe.
+3. If safe, place the queen.
+4. Move to the next row.
+5. If the next row cannot produce a solution, remove the queen and try another column.
+
+Why place one queen per row?
+
+Because two queens in the same row would attack each other.
+
+Therefore, we can simplify the problem:
+
+- Place exactly one queen in each row.
+- Make sure no two queens share a column.
+- Make sure no two queens share a diagonal.
+
+**The central idea:**
+
+Choose a safe position → Explore the next row → Undo the choice → Try another position.
+
+---
+
+## 3. Complete C++ Solution
+
+```cpp
+class Solution {
+private:
+
+    bool isSafe(
+        int row,
+        int col,
+        vector<string>& board,
+        int n
+    ) {
+
+        // Check the same column in previous rows.
+        for (int i = 0; i < row; i++) {
+
+            if (board[i][col] == 'Q') {
+                return false;
+            }
+        }
+
+        // Check upper-left diagonal.
+        int i = row - 1;
+        int j = col - 1;
+
+        while (i >= 0 && j >= 0) {
+
+            if (board[i][j] == 'Q') {
+                return false;
+            }
+
+            i--;
+            j--;
+        }
+
+        // Check upper-right diagonal.
+        i = row - 1;
+        j = col + 1;
+
+        while (i >= 0 && j < n) {
+
+            if (board[i][j] == 'Q') {
+                return false;
+            }
+
+            i--;
+            j++;
+        }
+
+        return true;
+    }
+
+    void backtrack(
+        int row,
+        vector<string>& board,
+        vector<vector<string>>& result,
+        int n
+    ) {
+
+        // All n queens have been placed.
+        if (row == n) {
+            result.push_back(board);
+            return;
+        }
+
+        // Try every column in the current row.
+        for (int col = 0; col < n; col++) {
+
+            if (isSafe(row, col, board, n)) {
+
+                // Choose: Place the queen.
+                board[row][col] = 'Q';
+
+                // Explore the next row.
+                backtrack(row + 1, board, result, n);
+
+                // Backtrack: Remove the queen.
+                board[row][col] = '.';
+            }
+        }
+    }
+
+public:
+
+    vector<vector<string>> solveNQueens(int n) {
+
+        vector<vector<string>> result;
+
+        // Initially, every cell is empty.
+        vector<string> board(n, string(n, '.'));
+
+        backtrack(0, board, result, n);
+
+        return result;
+    }
+};
+```
+
+---
+
+## 4. Understanding the Board Representation
+
+We use:
+
+```cpp
+vector<string> board(n, string(n, '.'));
+```
+
+This creates an `n × n` chessboard filled with dots.
+
+For `n = 4`:
+
+```text
+....
+....
+....
+....
+```
+
+Each string represents one row.
+
+For example:
+
+```cpp
+board[0][1] = 'Q';
+```
+
+Places a queen in row `0`, column `1`.
+
+The board becomes:
+
+```text
+.Q..
+....
+....
+....
+```
+
+We modify the board directly during backtracking.
+
+---
+
+## 5. Understanding the Parameters
+
+Our helper function:
+
+```cpp
+void backtrack(
+    int row,
+    vector<string>& board,
+    vector<vector<string>>& result,
+    int n
+)
+```
+
+Each parameter has a specific responsibility:
+
+| Parameter | Meaning |
+|---|---|
+| `row` | Current row where we need to place a queen |
+| `board` | Current chessboard configuration |
+| `result` | Stores all valid board arrangements |
+| `n` | Size of the chessboard |
+
+We start with:
+
+```cpp
+backtrack(0, board, result, n);
+```
+
+This means we start placing queens from row `0`.
+
+---
+
+## 6. Understanding the isSafe() Function
+
+This is one of the most important parts of N-Queens.
+
+Before placing a queen, we must check whether another queen can attack that position.
+
+Because we place queens row by row from top to bottom, we only need to check previous rows.
+
+There are three checks.
+
+### A. Check the Same Column
+
+```cpp
+for (int i = 0; i < row; i++) {
+
+    if (board[i][col] == 'Q') {
+        return false;
+    }
+}
+```
+
+Why?
+
+Because two queens cannot share the same column.
+
+Example:
+
+```text
+.Q..
+.Q..
+....
+....
+```
+
+The second queen cannot be placed in column `1`.
+
+The first queen already occupies that column.
+
+### B. Check the Upper-Left Diagonal
+
+```cpp
+int i = row - 1;
+int j = col - 1;
+
+while (i >= 0 && j >= 0) {
+
+    if (board[i][j] == 'Q') {
+        return false;
+    }
+
+    i--;
+    j--;
+}
+```
+
+We move:
+
+- One row upward.
+- One column to the left.
+
+Example:
+
+```text
+Q...
+....
+..X.
+....
+```
+
+If we want to place a queen at `X`, we must check the upper-left diagonal.
+
+If a queen exists there, the position is unsafe.
+
+### C. Check the Upper-Right Diagonal
+
+```cpp
+i = row - 1;
+j = col + 1;
+
+while (i >= 0 && j < n) {
+
+    if (board[i][j] == 'Q') {
+        return false;
+    }
+
+    i--;
+    j++;
+}
+```
+
+We move:
+
+- One row upward.
+- One column to the right.
+
+If a queen exists on this diagonal, the position is unsafe.
+
+### Why Don't We Check Lower Rows?
+
+Because we place queens from top to bottom.
+
+When placing a queen in the current row, all lower rows are still empty.
+
+Therefore, checking previous rows is sufficient.
+
+---
+
+## 7. Understanding the Recursive Call
+
+```cpp
+backtrack(row + 1, board, result, n);
+```
+
+Why `row + 1`?
+
+Because we place exactly one queen in each row.
+
+After successfully placing a queen in the current row, we move to the next row.
+
+Example:
+
+```text
+Row 0 → Place first queen.
+Row 1 → Place second queen.
+Row 2 → Place third queen.
+Row 3 → Place fourth queen.
+```
+
+Once all rows have a queen, we have a complete solution.
+
+---
+
+## 8. Understanding the Base Case
+
+```cpp
+if (row == n) {
+    result.push_back(board);
+    return;
+}
+```
+
+Why?
+
+Because the valid row indices are:
+
+```text
+0, 1, 2, ..., n - 1
+```
+
+When `row == n`, all rows have been processed.
+
+Since we place one queen in every row, we have successfully placed all `n` queens.
+
+Save the current board:
+
+```cpp
+result.push_back(board);
+```
+
+**Important:** We save a copy of the board because other recursive branches will modify the original board.
+
+---
+
+## 9. Understanding Backtracking
+
+Look at these operations:
+
+```cpp
+board[row][col] = 'Q';
+
+backtrack(row + 1, board, result, n);
+
+board[row][col] = '.';
+```
+
+Their responsibilities:
+
+| Operation | Purpose |
+|---|---|
+| `board[row][col] = 'Q'` | Place a queen |
+| `backtrack(row + 1, ...)` | Explore the next row |
+| `board[row][col] = '.'` | Remove the queen |
+
+Why remove the queen?
+
+Suppose we place a queen in column `0`.
+
+We explore all possibilities below that position.
+
+If no valid complete solution is possible, we must remove that queen and try column `1`.
+
+This restores the previous board state.
+
+**Choose → Explore → Undo → Try another position.**
+
+---
+
+## 10. Complete Dry Run
+
+**Input:**
+
+```cpp
+n = 4;
+```
+
+Initially:
+
+```text
+....
+....
+....
+....
+```
+
+We start from row `0`.
+
+### Step 1: Place the first queen
+
+Try column `0`.
+
+Position `(0, 0)` is safe.
+
+```text
+Q...
+....
+....
+....
+```
+
+Move to row `1`.
+
+### Step 2: Try placing the second queen
+
+Check column `0`.
+
+It is already occupied.
+
+Try column `1`.
+
+It is on the upper-left diagonal of the first queen.
+
+Unsafe.
+
+Try column `2`.
+
+It is safe.
+
+Place the queen:
+
+```text
+Q...
+..Q.
+....
+....
+```
+
+Move to row `2`.
+
+### Step 3: Try placing the third queen
+
+Check all columns.
+
+- Column `0`: Occupied.
+- Column `1`: Diagonal conflict.
+- Column `2`: Occupied.
+- Column `3`: Diagonal conflict.
+
+No safe position exists.
+
+Therefore, backtrack.
+
+Remove the queen from `(1, 2)`:
+
+```text
+Q...
+....
+....
+....
+```
+
+Try another position in row `1`.
+
+Column `3` is safe.
+
+```text
+Q...
+...Q
+....
+....
+```
+
+Move to row `2`.
+
+Again, explore all possible columns.
+
+If no valid placement exists, backtrack to row `0` and remove the first queen.
+
+### Step 4: Try column `1` in row `0`
+
+Place the queen:
+
+```text
+.Q..
+....
+....
+....
+```
+
+Continue exploring the next rows.
+
+One valid arrangement is:
+
+```text
+.Q..
+...Q
+Q...
+..Q.
+```
+
+All four queens are safe.
+
+Save this solution.
+
+### Step 5: Explore remaining branches
+
+Continue backtracking and trying other safe positions.
+
+The second valid arrangement is:
+
+```text
+..Q.
+Q...
+...Q
+.Q..
+```
+
+Save this solution too.
+
+**Final output:**
+
+```text
+[
+    [".Q..", "...Q", "Q...", "..Q."],
+    ["..Q.", "Q...", "...Q", ".Q.."]
+]
+```
+
+There are exactly two solutions for `n = 4`.
+
+---
+
+## 11. Visualizing the Two Valid Solutions
+
+### Solution 1
+
+```text
+. Q . .
+. . . Q
+Q . . .
+. . Q .
+```
+
+### Solution 2
+
+```text
+. . Q .
+Q . . .
+. . . Q
+. Q . .
+```
+
+In both arrangements:
+
+- Every row contains one queen.
+- Every column contains one queen.
+- No two queens share a diagonal.
+
+---
+
+## 12. Complexity Analysis
+
+Let `n` be the size of the chessboard.
+
+### Time Complexity
+
+We place one queen per row.
+
+For each row, we may try up to `n` columns.
+
+The number of possible arrangements is bounded by the permutations of columns, giving an O(n!) search bound.
+
+In the given implementation, each safety check takes O(n) time.
+
+Therefore, a conservative upper bound is:
+
+\[
+\boxed{O(n \times n!)}
+\]
+
+### Space Complexity
+
+- Chessboard: O(n²).
+- Recursion depth: O(n).
+- Temporary variables: O(1).
+
+Auxiliary space excluding the output:
+
+\[
+\boxed{O(n^2)}
+\]
+
+The output requires additional space for all valid board arrangements.
+
+---
+
+## 13. Common Interview Mistakes
+
+1. Checking only the column: Diagonal attacks must also be checked.
+2. Forgetting upper-left diagonal checking.
+3. Forgetting upper-right diagonal checking.
+4. Checking lower rows unnecessarily: They are empty because we move top to bottom.
+5. Forgetting to restore the board: Other recursive branches will be affected.
+6. Using `row + 1` incorrectly: We must move to the next row after placing a queen.
+7. Saving the result before all queens are placed.
+8. Forgetting that every row must contain exactly one queen.
+
+---
+
+## 14. Subsets vs Generate Parentheses vs N-Queens
+
+These problems use backtracking but have different constraints.
+
+| Feature | Subsets | Generate Parentheses | N-Queens |
+|---|---|---|---|
+| Main goal | Generate subsets | Generate valid parentheses | Place non-attacking queens |
+| Choices | Include or skip | Add `(` or `)` | Choose a column |
+| Tracking | Index | Open and close counts | Current row and board |
+| Validity condition | Every subset is valid | `close < open` | Column and diagonal checks |
+| Base case | All elements processed | String length = `2n` | `row == n` |
+| Backtracking | `pop_back()` | `pop_back()` | Restore `.` |
+
+The main difference is that N-Queens must validate whether a position is safe before exploring it.
+
+---
+
+## 15. Pattern Recognition for Interviews
+
+Think about this pattern when a problem asks you to:
+
+- Place objects on a board.
+- Follow restrictions between selected positions.
+- Generate all valid board arrangements.
+- Explore multiple positions and undo invalid choices.
+
+A useful question:
+
+**Can I build the solution one row at a time and validate each choice before moving forward?**
+
+If yes, backtracking is a strong approach.
+
+For N-Queens:
+
+1. Start from row `0`.
+2. Try every column.
+3. Check whether the position is safe.
+4. Place the queen.
+5. Move to the next row.
+6. Backtrack if the branch fails.
+7. Save when all rows are completed.
+
+---
+
+## 16. 30-Second Interview Revision
+
+**Q1. Why use backtracking?**
+
+Because we need to explore different queen placements and remove placements that cannot lead to a valid solution.
+
+**Q2. Why place one queen per row?**
+
+Because two queens in the same row would attack each other.
+
+**Q3. What three conditions must we check?**
+
+- Same column.
+- Upper-left diagonal.
+- Upper-right diagonal.
+
+**Q4. Why don't we check lower rows?**
+
+They are empty because we place queens from top to bottom.
+
+**Q5. Why restore the board using `.`?**
+
+To undo the previous placement before exploring another column.
+
+**Q6. What is the base case?**
+
+When `row == n`, all queens have been placed.
+
+**Q7. What is the time complexity?**
+
+A conservative upper bound for this implementation is O(n × n!).
+
+**Final takeaway**
+
+```text
+N-QUEENS = BACKTRACKING + SAFETY CHECK
+
+1. Start from row 0.
+2. Try every column.
+3. Check:
+       Same column
+       Upper-left diagonal
+       Upper-right diagonal
+4. If safe:
+       Place 'Q'.
+       Recurse using row + 1.
+       Restore '.'.
+5. When row == n:
+       Save the board.
+```
