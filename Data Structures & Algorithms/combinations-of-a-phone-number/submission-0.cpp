@@ -1,0 +1,73 @@
+class Solution {
+private:
+
+    void backtrack(
+            int index,
+                    string& digits,
+                            vector<string>& mapping,
+                                    string& current,
+                                            vector<string>& result
+                                                ) {
+
+                                                        // All digits have been processed.
+                                                                if (index == digits.size()) {
+                                                                            result.push_back(current);
+                                                                                        return;
+                                                                                                }
+
+                                                                                                        // Get letters corresponding to the current digit.
+                                                                                                                string letters = mapping[digits[index] - '0'];
+
+                                                                                                                        // Try every possible letter.
+                                                                                                                                for (char ch : letters) {
+
+                                                                                                                                            // Choose a letter.
+                                                                                                                                                        current.push_back(ch);
+
+                                                                                                                                                                    // Process the next digit.
+                                                                                                                                                                                backtrack(
+                                                                                                                                                                                                index + 1,
+                                                                                                                                                                                                                digits,
+                                                                                                                                                                                                                                mapping,
+                                                                                                                                                                                                                                                current,
+                                                                                                                                                                                                                                                                result
+                                                                                                                                                                                                                                                                            );
+
+                                                                                                                                                                                                                                                                                        // Backtrack.
+                                                                                                                                                                                                                                                                                                    current.pop_back();
+                                                                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                                                                                }
+
+                                                                                                                                                                                                                                                                                                                public:
+
+                                                                                                                                                                                                                                                                                                                    vector<string> letterCombinations(string digits) {
+
+                                                                                                                                                                                                                                                                                                                            vector<string> result;
+
+                                                                                                                                                                                                                                                                                                                                    // Handle empty input.
+                                                                                                                                                                                                                                                                                                                                            if (digits.empty()) {
+                                                                                                                                                                                                                                                                                                                                                        return result;
+                                                                                                                                                                                                                                                                                                                                                                }
+
+                                                                                                                                                                                                                                                                                                                                                                        // Phone keypad mapping.
+                                                                                                                                                                                                                                                                                                                                                                                vector<string> mapping = {
+                                                                                                                                                                                                                                                                                                                                                                                            "",     // 0
+                                                                                                                                                                                                                                                                                                                                                                                                        "",     // 1
+                                                                                                                                                                                                                                                                                                                                                                                                                    "abc",  // 2
+                                                                                                                                                                                                                                                                                                                                                                                                                                "def",  // 3
+                                                                                                                                                                                                                                                                                                                                                                                                                                            "ghi",  // 4
+                                                                                                                                                                                                                                                                                                                                                                                                                                                        "jkl",  // 5
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                    "mno",  // 6
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "pqrs", // 7
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            "tuv",  // 8
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "wxyz"  // 9
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                };
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        string current;
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                backtrack(0, digits, mapping, current, result);
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        return result;
+        
+    }
+};
